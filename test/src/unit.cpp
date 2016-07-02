@@ -9528,16 +9528,40 @@ TEST_CASE("lexer class")
 
         SECTION("numbers")
         {
-            CHECK(json::lexer("0").scan() == json::lexer::token_type::value_number);
-            CHECK(json::lexer("1").scan() == json::lexer::token_type::value_number);
-            CHECK(json::lexer("2").scan() == json::lexer::token_type::value_number);
-            CHECK(json::lexer("3").scan() == json::lexer::token_type::value_number);
-            CHECK(json::lexer("4").scan() == json::lexer::token_type::value_number);
-            CHECK(json::lexer("5").scan() == json::lexer::token_type::value_number);
-            CHECK(json::lexer("6").scan() == json::lexer::token_type::value_number);
-            CHECK(json::lexer("7").scan() == json::lexer::token_type::value_number);
-            CHECK(json::lexer("8").scan() == json::lexer::token_type::value_number);
-            CHECK(json::lexer("9").scan() == json::lexer::token_type::value_number);
+            // unsigned integer
+            CHECK(json::lexer("0").scan() == json::lexer::token_type::value_uint);
+            CHECK(json::lexer("1").scan() == json::lexer::token_type::value_uint);
+            CHECK(json::lexer("2").scan() == json::lexer::token_type::value_uint);
+            CHECK(json::lexer("3").scan() == json::lexer::token_type::value_uint);
+            CHECK(json::lexer("4").scan() == json::lexer::token_type::value_uint);
+            CHECK(json::lexer("5").scan() == json::lexer::token_type::value_uint);
+            CHECK(json::lexer("6").scan() == json::lexer::token_type::value_uint);
+            CHECK(json::lexer("7").scan() == json::lexer::token_type::value_uint);
+            CHECK(json::lexer("8").scan() == json::lexer::token_type::value_uint);
+            CHECK(json::lexer("9").scan() == json::lexer::token_type::value_uint);
+
+            // signed integer
+            CHECK(json::lexer("-1").scan() == json::lexer::token_type::value_int);
+            CHECK(json::lexer("-2").scan() == json::lexer::token_type::value_int);
+            CHECK(json::lexer("-3").scan() == json::lexer::token_type::value_int);
+            CHECK(json::lexer("-4").scan() == json::lexer::token_type::value_int);
+            CHECK(json::lexer("-5").scan() == json::lexer::token_type::value_int);
+            CHECK(json::lexer("-6").scan() == json::lexer::token_type::value_int);
+            CHECK(json::lexer("-7").scan() == json::lexer::token_type::value_int);
+            CHECK(json::lexer("-8").scan() == json::lexer::token_type::value_int);
+            CHECK(json::lexer("-9").scan() == json::lexer::token_type::value_int);
+
+            // floating-point
+            CHECK(json::lexer("0.0").scan() == json::lexer::token_type::value_number);
+            CHECK(json::lexer("0.1").scan() == json::lexer::token_type::value_number);
+            CHECK(json::lexer("0.2").scan() == json::lexer::token_type::value_number);
+            CHECK(json::lexer("0.3").scan() == json::lexer::token_type::value_number);
+            CHECK(json::lexer("0.4").scan() == json::lexer::token_type::value_number);
+            CHECK(json::lexer("0.5").scan() == json::lexer::token_type::value_number);
+            CHECK(json::lexer("0.6").scan() == json::lexer::token_type::value_number);
+            CHECK(json::lexer("0.7").scan() == json::lexer::token_type::value_number);
+            CHECK(json::lexer("0.8").scan() == json::lexer::token_type::value_number);
+            CHECK(json::lexer("0.9").scan() == json::lexer::token_type::value_number);
         }
 
         SECTION("whitespace")

@@ -7217,6 +7217,8 @@ class basic_json
             literal_false,   ///< the `false` literal
             literal_null,    ///< the `null` literal
             value_string,    ///< a string -- use get_string() for actual value
+            value_uint,      ///< a uint number -- use get_number_uint() for actual value
+            value_int,       ///< an int number -- use get_number_int() for actual value
             value_number,    ///< a number -- use get_number() for actual value
             begin_array,     ///< the character for array begin `[`
             begin_object,    ///< the character for object begin `{`
@@ -7354,6 +7356,8 @@ class basic_json
                     return "null literal";
                 case token_type::value_string:
                     return "string literal";
+                case token_type::value_uint:
+                case token_type::value_int:
                 case token_type::value_number:
                     return "number literal";
                 case token_type::begin_array:
@@ -7442,6 +7446,10 @@ class basic_json
                 exp           = e (minus|plus)? digit+;
                 frac          = decimal_point digit+;
                 int           = (zero|digit_1_9 digit*);
+                number_uint   = int;
+                number_uint   { return token_type::value_uint; }
+                number_int    = minus int;
+                number_int    { return token_type::value_int; }
                 number        = minus? int frac? exp?;
                 number        { return token_type::value_number; }
 
@@ -7637,11 +7645,6 @@ class basic_json
         the number
 
         @return the floating point number
-
-        @bug This function uses `std::strtof`, `std::strtod`, or `std::strtold`
-        which use the current C locale to determine which character is used as
-        decimal point character. This may yield to parse errors if the locale
-        does not used `.`.
         */
         long double str_to_float_t(long double* /* type */, char** endptr) const
         {
@@ -7649,19 +7652,7 @@ class basic_json
         }
 
         /*!
-        @brief parse floating point number
-
-        This function (and its overloads) serves to select the most approprate
-        standard floating point number parsing function based on the type
-        supplied via the first parameter.  Set this to @a
-        static_cast<number_float_t*>(nullptr).
-
-        @param[in] type  the @ref number_float_t in use
-
-        @param[in,out] endptr  recieves a pointer to the first character after
-        the number
-
-        @return the floating point number
+        @copydoc str_to_float_t()
         */
         double str_to_float_t(double* /* type */, char** endptr) const
         {
@@ -7669,19 +7660,7 @@ class basic_json
         }
 
         /*!
-        @brief parse floating point number
-
-        This function (and its overloads) serves to select the most approprate
-        standard floating point number parsing function based on the type
-        supplied via the first parameter.  Set this to @a
-        static_cast<number_float_t*>(nullptr).
-
-        @param[in] type  the @ref number_float_t in use
-
-        @param[in,out] endptr  recieves a pointer to the first character after
-        the number
-
-        @return the floating point number
+        @copydoc str_to_float_t()
         */
         float str_to_float_t(float* /* type */, char** endptr) const
         {
@@ -7689,109 +7668,90 @@ class basic_json
         }
 
         /*!
-        @brief return number value for number tokens
+        @brief parse floating-point number
 
-        This function translates the last token into the most appropriate
-        number type (either integer, unsigned integer or floating point),
-        which is passed back to the caller via the result parameter.
-
-        This function parses the integer component up to the radix point or
-        exponent while collecting information about the 'floating point
-        representation', which it stores in the result parameter. If there is
-        no radix point or exponent, and the number can fit into a @ref
-        number_integer_t or @ref number_unsigned_t then it sets the result
-        parameter accordingly.
-
-        If the number is a floating point number the number is then parsed
-        using @a std:strtod (or @a std:strtof or @a std::strtold).
-
-        @param[out] result  @ref basic_json object to receive the number, or
+        @param[in,out] result @ref basic_json object to receive the number, or
         NAN if the conversion read past the current token. The latter case
         needs to be treated by the caller function.
         */
-        void get_number(basic_json& result) const
+        void get_number_float(basic_json& result) const
         {
             assert(m_start != nullptr);
 
-            const lexer::lexer_char_t* curptr = m_start;
-
-            // accumulate the integer conversion result (unsigned for now)
-            number_unsigned_t value = 0;
-
-            // maximum absolute value of the relevant integer type
-            number_unsigned_t max;
-
-            // temporarily store the type to avoid unecessary bitfield access
-            value_t type;
-
-            // look for sign
-            if (*curptr == '-')
-            {
-                type = value_t::number_integer;
-                max = static_cast<uint64_t>((std::numeric_limits<number_integer_t>::max)()) + 1;
-                curptr++;
-            }
-            else
-            {
-                type = value_t::number_unsigned;
-                max = static_cast<uint64_t>((std::numeric_limits<number_unsigned_t>::max)());
-            }
-
-            // count the significant figures
-            for (; curptr < m_cursor; curptr++)
-            {
-                // quickly skip tests if a digit
-                if (*curptr < '0' || *curptr > '9')
-                {
-                    if (*curptr == '.')
-                    {
-                        // don't count '.' but change to float
-                        type = value_t::number_float;
-                        continue;
-                    }
-                    // assume exponent (if not then will fail parse): change to
-                    // float, stop counting and record exponent details
-                    type = value_t::number_float;
-                    break;
-                }
-
-                // skip if definitely not an integer
-                if (type != value_t::number_float)
-                {
-                    // multiply last value by ten and add the new digit
-                    auto temp = value * 10 + *curptr - '0';
-
-                    // test for overflow
-                    if (temp < value || temp > max)
-                    {
-                        // overflow
-                        type = value_t::number_float;
-                    }
-                    else
-                    {
-                        // no overflow - save it
-                        value = temp;
-                    }
-                }
-            }
-
-            // save the value (if not a float)
-            if (type == value_t::number_unsigned)
-            {
-                result.m_value.number_unsigned = value;
-            }
-            else if (type == value_t::number_integer)
-            {
-                result.m_value.number_integer = -static_cast<number_integer_t>(value);
-            }
-            else
-            {
-                // parse with strtod
-                result.m_value.number_float = str_to_float_t(static_cast<number_float_t*>(nullptr), NULL);
-            }
+            // parse with strtod
+            result.m_value.number_float = str_to_float_t(static_cast<number_float_t*>(nullptr), NULL);
 
             // save the type
-            result.m_type = type;
+            result.m_type = value_t::number_float;
+        }
+
+        /*!
+        @brief parse unsigned integer number
+
+        @param[in,out] result @ref basic_json object to receive the number, or
+        NAN if the conversion read past the current token. The latter case
+        needs to be treated by the caller function.
+
+        @note If the conversion by strtoull fails or an overflow wrt. type
+        @ref number_unsigned_t occurs, the number is processed as
+        floating-point by @ref get_number_float().
+        */
+        void get_number_uint(basic_json& result) const
+        {
+            assert(m_start != nullptr);
+            auto val = std::strtoull(reinterpret_cast<typename string_t::const_pointer>(m_start), nullptr, 10);
+
+            if (errno == ERANGE)
+            {
+                // range error - try again as float
+                errno = 0;
+                get_number_float(result);
+            }
+            else if (val > std::numeric_limits<number_unsigned_t>::max())
+            {
+                // overflow error - try again as float
+                get_number_float(result);
+            }
+            else
+            {
+                result.m_type = value_t::number_unsigned;
+                result.m_value.number_unsigned = static_cast<number_unsigned_t>(val);
+            }
+        }
+
+        /*!
+        @brief parse signed integer number
+
+        @param[in,out] result @ref basic_json object to receive the number, or
+        NAN if the conversion read past the current token. The latter case
+        needs to be treated by the caller function.
+
+        @note If the conversion by strtoll fails or an underflow or overflow
+        wrt. type @ref number_integer_t occurs, the number is processed as
+        floating-point by @ref get_number_float().
+        */
+        void get_number_int(basic_json& result) const
+        {
+            assert(m_start != nullptr);
+            auto val = std::strtoll(reinterpret_cast<typename string_t::const_pointer>(m_start), nullptr, 10);
+
+            if (errno == ERANGE)
+            {
+                // range error - try again as float
+                errno = 0;
+                get_number_float(result);
+            }
+            else if (val > std::numeric_limits<number_integer_t>::max() or
+                     val < std::numeric_limits<number_integer_t>::min())
+            {
+                // overflow error - try again as float
+                get_number_float(result);
+            }
+            else
+            {
+                result.m_type = value_t::number_integer;
+                result.m_value.number_integer = static_cast<number_integer_t>(val);
+            }
         }
 
       private:
@@ -8019,9 +7979,23 @@ class basic_json
                     break;
                 }
 
+                case lexer::token_type::value_uint:
+                {
+                    m_lexer.get_number_uint(result);
+                    get_token();
+                    break;
+                }
+
+                case lexer::token_type::value_int:
+                {
+                    m_lexer.get_number_int(result);
+                    get_token();
+                    break;
+                }
+
                 case lexer::token_type::value_number:
                 {
-                    m_lexer.get_number(result);
+                    m_lexer.get_number_float(result);
                     get_token();
                     break;
                 }
