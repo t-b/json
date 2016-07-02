@@ -11947,7 +11947,7 @@ TEST_CASE("compliance tests from nativejson-benchmark")
                     "test/data/json_roundtrip/roundtrip01.json",
                     "test/data/json_roundtrip/roundtrip02.json",
                     "test/data/json_roundtrip/roundtrip03.json",
-                    //"test/data/json_roundtrip/roundtrip04.json", // strange clang3.8 error
+                    "test/data/json_roundtrip/roundtrip04.json",
                     "test/data/json_roundtrip/roundtrip05.json",
                     "test/data/json_roundtrip/roundtrip06.json",
                     "test/data/json_roundtrip/roundtrip07.json",
