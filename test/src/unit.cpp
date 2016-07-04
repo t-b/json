@@ -11938,6 +11938,16 @@ TEST_CASE("compliance tests from nativejson-benchmark")
         TEST_STRING("[\"\\uD834\\uDD1E\"]", "\xF0\x9D\x84\x9E");  // G clef sign U+1D11E
     }
 
+    SECTION("extra_test")
+    {
+        auto s = "[0]";
+        auto j = json::parse(s);
+        std::cout << j.type_name() << std::endl;
+        std::cout << j[0].type_name() << std::endl;
+        std::cout << j.dump() << std::endl;
+        std::cout << j[0].dump() << std::endl;
+    }
+
     SECTION("roundtrip")
     {
         // test cases are from https://github.com/miloyip/nativejson-benchmark/tree/master/test/data/roundtrip
