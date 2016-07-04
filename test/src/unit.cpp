@@ -11940,12 +11940,14 @@ TEST_CASE("compliance tests from nativejson-benchmark")
 
     SECTION("extra_test")
     {
+        std::cerr << "========================" << std::endl;
         auto s = "[0]";
         auto j = json::parse(s);
-        std::cout << j.type_name() << std::endl;
-        std::cout << j[0].type_name() << std::endl;
-        std::cout << j.dump() << std::endl;
-        std::cout << j[0].dump() << std::endl;
+        std::cerr << j.type_name() << std::endl;
+        std::cerr << j[0].type_name() << std::endl;
+        std::cerr << j.dump() << std::endl;
+        std::cerr << j[0].dump() << std::endl;
+        std::cerr << "========================" << std::endl;
     }
 
     SECTION("roundtrip")
