@@ -8442,7 +8442,6 @@ basic_json_parser_68:
         */
         void get_number_float(basic_json& result) const
         {
-            std::cerr << "get_number_float" << std::endl;
             assert(m_start != nullptr);
 
             // parse with strtod
@@ -8465,29 +8464,24 @@ basic_json_parser_68:
         */
         void get_number_uint(basic_json& result) const
         {
-            std::cerr << "get_number_uint for '" << reinterpret_cast<typename string_t::const_pointer>
-                      (m_start) << "'" << std::endl;
             assert(m_start != nullptr);
             errno = 0;
-            unsigned long long val = std::strtoull(reinterpret_cast<typename string_t::const_pointer>(m_start),
-                                                   nullptr, 10);
+            auto val = std::strtoull(reinterpret_cast<typename string_t::const_pointer>(m_start),
+                                     nullptr, 10);
 
             if (errno == ERANGE)
             {
-                std::cerr << "range error" << std::endl;
                 // range error - try again as float
                 errno = 0;
                 get_number_float(result);
             }
             else if (val > std::numeric_limits<number_unsigned_t>::max())
             {
-                std::cerr << "overflow" << std::endl;
                 // overflow error - try again as float
                 get_number_float(result);
             }
             else
             {
-                std::cerr << "success: " << val << std::endl;
                 result.m_type = value_t::number_unsigned;
                 result.m_value.number_unsigned = static_cast<number_unsigned_t>(val);
             }
@@ -8507,6 +8501,7 @@ basic_json_parser_68:
         void get_number_int(basic_json& result) const
         {
             assert(m_start != nullptr);
+            errno = 0;
             auto val = std::strtoll(reinterpret_cast<typename string_t::const_pointer>(m_start), nullptr, 10);
 
             if (errno == ERANGE)
