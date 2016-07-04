@@ -32,6 +32,7 @@ SOFTWARE.
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cctype>
 #include <cerrno>
 #include <ciso646>
 #include <cmath>
@@ -8465,17 +8466,32 @@ basic_json_parser_68:
         void get_number_uint(basic_json& result) const
         {
             assert(m_start != nullptr);
-            errno = 0;
-            auto val = std::strtoull(reinterpret_cast<typename string_t::const_pointer>(m_start),
-                                     nullptr, 10);
+            auto p = reinterpret_cast<typename string_t::const_pointer>(m_start);
 
-            if (errno == ERANGE)
+            // whether an overflow occurred
+            bool overflow = false;
+            // variable for the conversion result
+            uint64_t val = 0;
+
+            while (isdigit(*p))
             {
-                // range error - try again as float
-                errno = 0;
-                get_number_float(result);
+                // calculate value after adding last digit
+                const uint64_t new_val = (val * 10) + static_cast<uint64_t>(*p - '0');
+
+                // overflow check
+                if (new_val < val)
+                {
+                    overflow = true;
+                    break;
+                }
+                else
+                {
+                    val = new_val;
+                    ++p;
+                }
             }
-            else if (val > std::numeric_limits<number_unsigned_t>::max())
+
+            if (overflow or val > std::numeric_limits<number_unsigned_t>::max())
             {
                 // overflow error - try again as float
                 get_number_float(result);
