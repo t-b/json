@@ -8468,7 +8468,9 @@ basic_json_parser_68:
             std::cerr << "get_number_uint for '" << reinterpret_cast<typename string_t::const_pointer>
                       (m_start) << "'" << std::endl;
             assert(m_start != nullptr);
-            auto val = std::strtoull(reinterpret_cast<typename string_t::const_pointer>(m_start), nullptr, 10);
+            errno = 0;
+            unsigned long long val = std::strtoull(reinterpret_cast<typename string_t::const_pointer>(m_start),
+                                                   nullptr, 10);
 
             if (errno == ERANGE)
             {
