@@ -7678,12 +7678,87 @@ class basic_json
         {
             assert(m_start != nullptr);
 
-            // parse with strtod
+            // parse with std::strtof, std::strtod, or std::strtold
             result.m_value.number_float = str_to_float_t(static_cast<number_float_t*>(nullptr), NULL);
 
             // save the type
             result.m_type = value_t::number_float;
         }
+
+        /*!
+        @brief string to unsigned integer conversion
+
+        Converts the last string read by the lexer to an unsigned integer
+        number assuming a base of 10. Negative numbers shall be converted by
+        ignoring the leading '-' by setting @a skip_first to false. Negating
+        the value is in the responsability of the caller.
+
+        @param[out] result  the result of the conversion
+        @param skip_first  whether the first character should be skipped
+
+        @tparam T  an unsigned integer type
+
+        @return true iff overflow occurred; false if conversion succeeded
+
+        @pre The re2c lexer has successfully parsed an integer number. Only
+        two cases are valid: (1) all characters between m_start and m_cursor
+        are digits (unsigned integer) and @a skip_first is set to false, or
+        (2) the character at m_start is a '-' which will be ignored (@a
+        skip_first is set to true) and all other characters until m_cursor
+        are digits (signed integer).
+
+        @post Either the string between m_start and m_cursor is processed
+        completely, @a result contains the parsed number, and the function
+        returns false; or parsing was interrupted prematurely, because an
+        overflow was detected. Then, the function returns true.
+        */
+        template<typename T>
+        bool get_uint(T& result, bool skip_first) const
+        {
+            assert(m_start != nullptr);
+            assert(m_start != m_cursor);
+
+            // initially, set the result to 0
+            result = 0;
+
+            // maximal possible value for number_unsigned_t
+            static const T max_value = std::numeric_limits<T>::max();
+            // maximal intermediate value before multiplying by 10
+            static const T max_intermediate = max_value / 10;
+
+            /// pointer to the first digit (possibly skipping a '-')
+            const auto first_digit = skip_first ? (m_start + 1) : m_start;
+
+            // after re2c successfully parsed a number, the digits are between
+            // first_digit and m_cursor
+            for (auto p = first_digit; p != m_cursor; ++p)
+            {
+                // check if multiplying by 10 would result in overflow
+                if (result > max_intermediate)
+                {
+                    // signal overflow
+                    return true;
+                }
+
+                result *= 10;
+
+                // the current digit
+                const T digit = static_cast<T>(*reinterpret_cast<typename string_t::const_pointer>(p) - '0');
+
+                // check if adding the digit would result in overflow
+                if (digit > (max_value - result))
+                {
+                    // signal overflow
+                    return true;
+                }
+
+                result += digit;
+            }
+
+            // signal absence of overflow
+            return false;
+        }
+
 
         /*!
         @brief parse unsigned integer number
@@ -7697,46 +7772,11 @@ class basic_json
         */
         void get_number_uint(basic_json& result) const
         {
-            assert(m_start != nullptr);
-
-            // set result to unsigned int
+            // optimistically set result to unsigned int
             result.m_type = value_t::number_unsigned;
-            result.m_value.number_unsigned = 0;
 
-            // maximal possible value for number_unsigned_t
-            static const number_unsigned_t max_value = std::numeric_limits<number_unsigned_t>::max();
-            // maximal intermediate value before multiplying by 10
-            static const number_unsigned_t max_intermediate = max_value / 10;
-
-            // whether an overflow occurred
-            bool overflow = false;
-
-            // after re2c successfully parsed a number, the digits are between
-            // m_start and m_cursor
-            for (auto p = m_start; p != m_cursor; ++p)
-            {
-                // check if multiplying by 10 would be safe
-                if (result.m_value.number_unsigned > max_intermediate)
-                {
-                    overflow = true;
-                    break;
-                }
-
-                result.m_value.number_unsigned *= 10;
-
-                // the current digit
-                const number_unsigned_t digit = static_cast<number_unsigned_t>
-                                                (*reinterpret_cast<typename string_t::const_pointer>(p) - '0');
-
-                // check if adding the digit would be safe
-                if (digit > (max_value - result.m_value.number_unsigned))
-                {
-                    overflow = true;
-                    break;
-                }
-
-                result.m_value.number_unsigned += digit;
-            }
+            // parse the number
+            const bool overflow = get_uint(result.m_value.number_unsigned, false);
 
             // if an overflow occurred, try again parsing the number to float
             if (overflow)
@@ -7752,32 +7792,30 @@ class basic_json
         NAN if the conversion read past the current token. The latter case
         needs to be treated by the caller function.
 
-        @note If the conversion by strtoll fails or an underflow or overflow
-        wrt. type @ref number_integer_t occurs, the number is processed as
-        floating-point by @ref get_number_float().
+        @note If an overflow wrt. type @ref number_integer_t occurs, the
+        number is processed as floating-point by @ref get_number_float().
         */
         void get_number_int(basic_json& result) const
         {
-            assert(m_start != nullptr);
-            errno = 0;
-            auto val = std::strtoll(reinterpret_cast<typename string_t::const_pointer>(m_start), nullptr, 10);
+            // optimistically set result to int
+            result.m_type = value_t::number_integer;
 
-            if (errno == ERANGE)
+            // parse as unsigned integer (skip the leading '-')
+            number_unsigned_t unsigned_value = 0;
+            const bool overflow = get_uint(unsigned_value, true);
+
+            // store negated number
+            result.m_value.number_integer = static_cast<number_integer_t>(-unsigned_value);
+
+            // if an overflow occurred, try again parsing the number to float;
+            // note that, assuming min = -(max + 1), we have an underflow
+            // iff  -unsigned_value     < min
+            // iff  -unsigned_value     < -(max + 1)
+            // iff   unsigned_value     > max + 1
+            // iff   unsigned_value - 1 > max
+            if (overflow or (unsigned_value - 1) > std::numeric_limits<number_integer_t>::max())
             {
-                // range error - try again as float
-                errno = 0;
                 get_number_float(result);
-            }
-            else if (val > std::numeric_limits<number_integer_t>::max() or
-                     val < std::numeric_limits<number_integer_t>::min())
-            {
-                // overflow error - try again as float
-                get_number_float(result);
-            }
-            else
-            {
-                result.m_type = value_t::number_integer;
-                result.m_value.number_integer = static_cast<number_integer_t>(val);
             }
         }
 
