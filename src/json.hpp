@@ -8474,18 +8474,6 @@ basic_json_parser_68:
 
             while (p != reinterpret_cast<typename string_t::const_pointer>(m_cursor))
             {
-#if (defined(__clang__) || defined(__GNUC__)) && __has_builtin(__builtin_umulll_overflow) && __has_builtin(__builtin_uaddll_overflow)
-                if (__builtin_umulll_overflow(val, 10ull, &val) ||
-                        __builtin_uaddll_overflow(val, static_cast<uint64_t>(*p - '0'), &val))
-                {
-                    overflow = true;
-                    break;
-                }
-                else
-                {
-                    ++p;
-                }
-#else
                 // calculate value after adding last digit
                 const uint64_t new_val = (val * 10) + static_cast<uint64_t>(*p - '0');
 
@@ -8500,7 +8488,6 @@ basic_json_parser_68:
                     val = new_val;
                     ++p;
                 }
-#endif
             }
 
             if (overflow or val > std::numeric_limits<number_unsigned_t>::max())
