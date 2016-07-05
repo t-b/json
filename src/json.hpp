@@ -8458,47 +8458,56 @@ basic_json_parser_68:
         NAN if the conversion read past the current token. The latter case
         needs to be treated by the caller function.
 
-        @note If the conversion by strtoull fails or an overflow wrt. type
-        @ref number_unsigned_t occurs, the number is processed as
-        floating-point by @ref get_number_float().
+        @note If an overflow wrt. type @ref number_unsigned_t occurs, the
+        number is processed as floating-point by @ref get_number_float().
         */
         void get_number_uint(basic_json& result) const
         {
             assert(m_start != nullptr);
-            auto p = reinterpret_cast<typename string_t::const_pointer>(m_start);
+
+            // set result to unsigned int
+            result.m_type = value_t::number_unsigned;
+            result.m_value.number_unsigned = 0;
+
+            // maximal possible value for number_unsigned_t
+            static const number_unsigned_t max_value = std::numeric_limits<number_unsigned_t>::max();
+            // maximal intermediate value before multiplying by 10
+            static const number_unsigned_t max_intermediate = max_value / 10;
 
             // whether an overflow occurred
             bool overflow = false;
-            // variable for the conversion result
-            uint64_t val = 0;
 
-            while (p != reinterpret_cast<typename string_t::const_pointer>(m_cursor))
+            // after re2c successfully parsed a number, the digits are between
+            // m_start and m_cursor
+            for (auto p = m_start; p != m_cursor; ++p)
             {
-                // calculate value after adding last digit
-                const uint64_t new_val = (val * 10) + static_cast<uint64_t>(*p - '0');
-
-                // overflow check
-                if (new_val < val)
+                // check if multiplying by 10 would be safe
+                if (result.m_value.number_unsigned > max_intermediate)
                 {
                     overflow = true;
                     break;
                 }
-                else
+
+                result.m_value.number_unsigned *= 10;
+
+                // the current digit
+                const number_unsigned_t digit = static_cast<number_unsigned_t>
+                                                (*reinterpret_cast<typename string_t::const_pointer>(p) - '0');
+
+                // check if adding the digit would be safe
+                if (digit > (max_value - result.m_value.number_unsigned))
                 {
-                    val = new_val;
-                    ++p;
+                    overflow = true;
+                    break;
                 }
+
+                result.m_value.number_unsigned += digit;
             }
 
-            if (overflow or val > std::numeric_limits<number_unsigned_t>::max())
+            // if an overflow occurred, try again parsing the number to float
+            if (overflow)
             {
-                // overflow error - try again as float
                 get_number_float(result);
-            }
-            else
-            {
-                result.m_type = value_t::number_unsigned;
-                result.m_value.number_unsigned = static_cast<number_unsigned_t>(val);
             }
         }
 
