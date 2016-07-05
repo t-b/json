@@ -32,7 +32,6 @@ SOFTWARE.
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <cctype>
 #include <cerrno>
 #include <ciso646>
 #include <cmath>
@@ -7707,7 +7706,7 @@ class basic_json
             // variable for the conversion result
             uint64_t val = 0;
 
-            while (isdigit(*p))
+            while (p != reinterpret_cast<typename string_t::const_pointer>(m_cursor))
             {
                 // calculate value after adding last digit
                 const uint64_t new_val = (val * 10) + static_cast<uint64_t>(*p - '0');
