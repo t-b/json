@@ -36,7 +36,7 @@ SOFTWARE.
 #include <ciso646>
 #include <cmath>
 #include <cstddef>
-#include <cstdio>
+#include <cstdint>
 #include <cstdlib>
 #include <functional>
 #include <initializer_list>
@@ -7396,414 +7396,416 @@ class basic_json
         */
         token_type scan() noexcept
         {
-            // pointer for backtracking information
-            m_marker = nullptr;
-
-            // remember the begin of the token
-            m_start = m_cursor;
-            assert(m_start != nullptr);
-
-
+            while (true)
             {
-                lexer_char_t yych;
-                unsigned int yyaccept = 0;
-                static const unsigned char yybm[] =
+                // pointer for backtracking information
+                m_marker = nullptr;
+
+                // remember the begin of the token
+                m_start = m_cursor;
+                assert(m_start != nullptr);
+
+
                 {
-                    0,   0,   0,   0,   0,   0,   0,   0,
-                    0,  32,  32,   0,   0,  32,   0,   0,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    160, 128,   0, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    192, 192, 192, 192, 192, 192, 192, 192,
-                    192, 192, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128,   0, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                    128, 128, 128, 128, 128, 128, 128, 128,
-                };
-                if ((m_limit - m_cursor) < 5)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-                if (yybm[0 + yych] & 32)
-                {
-                    goto basic_json_parser_6;
-                }
-                if (yych <= '\\')
-                {
-                    if (yych <= '-')
+                    lexer_char_t yych;
+                    unsigned int yyaccept = 0;
+                    static const unsigned char yybm[] =
                     {
-                        if (yych <= '"')
+                        0,   0,   0,   0,   0,   0,   0,   0,
+                        0,  32,  32,   0,   0,  32,   0,   0,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        160, 128,   0, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        192, 192, 192, 192, 192, 192, 192, 192,
+                        192, 192, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128,   0, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                        128, 128, 128, 128, 128, 128, 128, 128,
+                    };
+                    if ((m_limit - m_cursor) < 5)
+                    {
+                        yyfill();    // LCOV_EXCL_LINE;
+                    }
+                    yych = *m_cursor;
+                    if (yybm[0 + yych] & 32)
+                    {
+                        goto basic_json_parser_6;
+                    }
+                    if (yych <= '\\')
+                    {
+                        if (yych <= '-')
                         {
-                            if (yych <= 0x00)
+                            if (yych <= '"')
                             {
-                                goto basic_json_parser_2;
+                                if (yych <= 0x00)
+                                {
+                                    goto basic_json_parser_2;
+                                }
+                                if (yych <= '!')
+                                {
+                                    goto basic_json_parser_4;
+                                }
+                                goto basic_json_parser_9;
                             }
-                            if (yych <= '!')
+                            else
                             {
-                                goto basic_json_parser_4;
+                                if (yych <= '+')
+                                {
+                                    goto basic_json_parser_4;
+                                }
+                                if (yych <= ',')
+                                {
+                                    goto basic_json_parser_10;
+                                }
+                                goto basic_json_parser_12;
                             }
-                            goto basic_json_parser_9;
                         }
                         else
                         {
-                            if (yych <= '+')
+                            if (yych <= '9')
                             {
+                                if (yych <= '/')
+                                {
+                                    goto basic_json_parser_4;
+                                }
+                                if (yych <= '0')
+                                {
+                                    goto basic_json_parser_13;
+                                }
+                                goto basic_json_parser_15;
+                            }
+                            else
+                            {
+                                if (yych <= ':')
+                                {
+                                    goto basic_json_parser_17;
+                                }
+                                if (yych == '[')
+                                {
+                                    goto basic_json_parser_19;
+                                }
                                 goto basic_json_parser_4;
                             }
-                            if (yych <= ',')
-                            {
-                                goto basic_json_parser_10;
-                            }
-                            goto basic_json_parser_12;
                         }
                     }
                     else
                     {
-                        if (yych <= '9')
+                        if (yych <= 't')
                         {
-                            if (yych <= '/')
+                            if (yych <= 'f')
                             {
-                                goto basic_json_parser_4;
+                                if (yych <= ']')
+                                {
+                                    goto basic_json_parser_21;
+                                }
+                                if (yych <= 'e')
+                                {
+                                    goto basic_json_parser_4;
+                                }
+                                goto basic_json_parser_23;
                             }
-                            if (yych <= '0')
+                            else
                             {
-                                goto basic_json_parser_13;
+                                if (yych == 'n')
+                                {
+                                    goto basic_json_parser_24;
+                                }
+                                if (yych <= 's')
+                                {
+                                    goto basic_json_parser_4;
+                                }
+                                goto basic_json_parser_25;
                             }
-                            goto basic_json_parser_15;
                         }
                         else
                         {
-                            if (yych <= ':')
+                            if (yych <= '|')
                             {
-                                goto basic_json_parser_17;
-                            }
-                            if (yych == '[')
-                            {
-                                goto basic_json_parser_19;
-                            }
-                            goto basic_json_parser_4;
-                        }
-                    }
-                }
-                else
-                {
-                    if (yych <= 't')
-                    {
-                        if (yych <= 'f')
-                        {
-                            if (yych <= ']')
-                            {
-                                goto basic_json_parser_21;
-                            }
-                            if (yych <= 'e')
-                            {
+                                if (yych == '{')
+                                {
+                                    goto basic_json_parser_26;
+                                }
                                 goto basic_json_parser_4;
                             }
-                            goto basic_json_parser_23;
-                        }
-                        else
-                        {
-                            if (yych == 'n')
+                            else
                             {
-                                goto basic_json_parser_24;
-                            }
-                            if (yych <= 's')
-                            {
+                                if (yych <= '}')
+                                {
+                                    goto basic_json_parser_28;
+                                }
+                                if (yych == 0xEF)
+                                {
+                                    goto basic_json_parser_30;
+                                }
                                 goto basic_json_parser_4;
                             }
-                            goto basic_json_parser_25;
                         }
                     }
-                    else
-                    {
-                        if (yych <= '|')
-                        {
-                            if (yych == '{')
-                            {
-                                goto basic_json_parser_26;
-                            }
-                            goto basic_json_parser_4;
-                        }
-                        else
-                        {
-                            if (yych <= '}')
-                            {
-                                goto basic_json_parser_28;
-                            }
-                            if (yych == 0xEF)
-                            {
-                                goto basic_json_parser_30;
-                            }
-                            goto basic_json_parser_4;
-                        }
-                    }
-                }
 basic_json_parser_2:
-                ++m_cursor;
-                {
-                    return token_type::end_of_input;
-                }
+                    ++m_cursor;
+                    {
+                        last_token_type = token_type::end_of_input;
+                        break;
+                    }
 basic_json_parser_4:
-                ++m_cursor;
+                    ++m_cursor;
 basic_json_parser_5:
-                {
-                    return token_type::parse_error;
-                }
+                    {
+                        last_token_type = token_type::parse_error;
+                        break;
+                    }
 basic_json_parser_6:
-                ++m_cursor;
-                if (m_limit <= m_cursor)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-                if (yybm[0 + yych] & 32)
-                {
-                    goto basic_json_parser_6;
-                }
-                {
-                    return scan();
-                }
+                    ++m_cursor;
+                    if (m_limit <= m_cursor)
+                    {
+                        yyfill();    // LCOV_EXCL_LINE;
+                    }
+                    yych = *m_cursor;
+                    if (yybm[0 + yych] & 32)
+                    {
+                        goto basic_json_parser_6;
+                    }
+                    {
+                        continue;
+                    }
 basic_json_parser_9:
-                yyaccept = 0;
-                yych = *(m_marker = ++m_cursor);
-                if (yych <= 0x0F)
-                {
-                    goto basic_json_parser_5;
-                }
-                goto basic_json_parser_32;
-basic_json_parser_10:
-                ++m_cursor;
-                {
-                    return token_type::value_separator;
-                }
-basic_json_parser_12:
-                yych = *++m_cursor;
-                if (yych <= '/')
-                {
-                    goto basic_json_parser_5;
-                }
-                if (yych <= '0')
-                {
-                    goto basic_json_parser_37;
-                }
-                if (yych <= '9')
-                {
-                    goto basic_json_parser_39;
-                }
-                goto basic_json_parser_5;
-basic_json_parser_13:
-                yyaccept = 1;
-                yych = *(m_marker = ++m_cursor);
-                if (yych <= 'D')
-                {
-                    if (yych == '.')
-                    {
-                        goto basic_json_parser_41;
-                    }
-                }
-                else
-                {
-                    if (yych <= 'E')
-                    {
-                        goto basic_json_parser_42;
-                    }
-                    if (yych == 'e')
-                    {
-                        goto basic_json_parser_42;
-                    }
-                }
-basic_json_parser_14:
-                {
-                    return token_type::value_uint;
-                }
-basic_json_parser_15:
-                yyaccept = 1;
-                m_marker = ++m_cursor;
-                if ((m_limit - m_cursor) < 3)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-                if (yybm[0 + yych] & 64)
-                {
-                    goto basic_json_parser_15;
-                }
-                if (yych <= 'D')
-                {
-                    if (yych == '.')
-                    {
-                        goto basic_json_parser_41;
-                    }
-                    goto basic_json_parser_14;
-                }
-                else
-                {
-                    if (yych <= 'E')
-                    {
-                        goto basic_json_parser_42;
-                    }
-                    if (yych == 'e')
-                    {
-                        goto basic_json_parser_42;
-                    }
-                    goto basic_json_parser_14;
-                }
-basic_json_parser_17:
-                ++m_cursor;
-                {
-                    return token_type::name_separator;
-                }
-basic_json_parser_19:
-                ++m_cursor;
-                {
-                    return token_type::begin_array;
-                }
-basic_json_parser_21:
-                ++m_cursor;
-                {
-                    return token_type::end_array;
-                }
-basic_json_parser_23:
-                yyaccept = 0;
-                yych = *(m_marker = ++m_cursor);
-                if (yych == 'a')
-                {
-                    goto basic_json_parser_43;
-                }
-                goto basic_json_parser_5;
-basic_json_parser_24:
-                yyaccept = 0;
-                yych = *(m_marker = ++m_cursor);
-                if (yych == 'u')
-                {
-                    goto basic_json_parser_44;
-                }
-                goto basic_json_parser_5;
-basic_json_parser_25:
-                yyaccept = 0;
-                yych = *(m_marker = ++m_cursor);
-                if (yych == 'r')
-                {
-                    goto basic_json_parser_45;
-                }
-                goto basic_json_parser_5;
-basic_json_parser_26:
-                ++m_cursor;
-                {
-                    return token_type::begin_object;
-                }
-basic_json_parser_28:
-                ++m_cursor;
-                {
-                    return token_type::end_object;
-                }
-basic_json_parser_30:
-                yyaccept = 0;
-                yych = *(m_marker = ++m_cursor);
-                if (yych == 0xBB)
-                {
-                    goto basic_json_parser_46;
-                }
-                goto basic_json_parser_5;
-basic_json_parser_31:
-                ++m_cursor;
-                if (m_limit <= m_cursor)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-basic_json_parser_32:
-                if (yybm[0 + yych] & 128)
-                {
-                    goto basic_json_parser_31;
-                }
-                if (yych <= 0x0F)
-                {
-                    goto basic_json_parser_33;
-                }
-                if (yych <= '"')
-                {
-                    goto basic_json_parser_34;
-                }
-                goto basic_json_parser_36;
-basic_json_parser_33:
-                m_cursor = m_marker;
-                if (yyaccept <= 1)
-                {
-                    if (yyaccept == 0)
+                    yyaccept = 0;
+                    yych = *(m_marker = ++m_cursor);
+                    if (yych <= 0x0F)
                     {
                         goto basic_json_parser_5;
                     }
-                    else
+                    goto basic_json_parser_32;
+basic_json_parser_10:
+                    ++m_cursor;
                     {
-                        goto basic_json_parser_14;
+                        last_token_type = token_type::value_separator;
+                        break;
                     }
-                }
-                else
-                {
-                    if (yyaccept == 2)
-                    {
-                        goto basic_json_parser_38;
-                    }
-                    else
-                    {
-                        goto basic_json_parser_50;
-                    }
-                }
-basic_json_parser_34:
-                ++m_cursor;
-                {
-                    return token_type::value_string;
-                }
-basic_json_parser_36:
-                ++m_cursor;
-                if (m_limit <= m_cursor)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-                if (yych <= 'e')
-                {
+basic_json_parser_12:
+                    yych = *++m_cursor;
                     if (yych <= '/')
                     {
-                        if (yych == '"')
+                        goto basic_json_parser_5;
+                    }
+                    if (yych <= '0')
+                    {
+                        goto basic_json_parser_37;
+                    }
+                    if (yych <= '9')
+                    {
+                        goto basic_json_parser_39;
+                    }
+                    goto basic_json_parser_5;
+basic_json_parser_13:
+                    yyaccept = 1;
+                    yych = *(m_marker = ++m_cursor);
+                    if (yych <= 'D')
+                    {
+                        if (yych == '.')
                         {
-                            goto basic_json_parser_31;
+                            goto basic_json_parser_41;
                         }
-                        if (yych <= '.')
-                        {
-                            goto basic_json_parser_33;
-                        }
-                        goto basic_json_parser_31;
                     }
                     else
                     {
-                        if (yych <= '\\')
+                        if (yych <= 'E')
                         {
-                            if (yych <= '[')
+                            goto basic_json_parser_42;
+                        }
+                        if (yych == 'e')
+                        {
+                            goto basic_json_parser_42;
+                        }
+                    }
+basic_json_parser_14:
+                    {
+                        last_token_type = token_type::value_uint;
+                        break;
+                    }
+basic_json_parser_15:
+                    yyaccept = 1;
+                    m_marker = ++m_cursor;
+                    if ((m_limit - m_cursor) < 3)
+                    {
+                        yyfill();    // LCOV_EXCL_LINE;
+                    }
+                    yych = *m_cursor;
+                    if (yybm[0 + yych] & 64)
+                    {
+                        goto basic_json_parser_15;
+                    }
+                    if (yych <= 'D')
+                    {
+                        if (yych == '.')
+                        {
+                            goto basic_json_parser_41;
+                        }
+                        goto basic_json_parser_14;
+                    }
+                    else
+                    {
+                        if (yych <= 'E')
+                        {
+                            goto basic_json_parser_42;
+                        }
+                        if (yych == 'e')
+                        {
+                            goto basic_json_parser_42;
+                        }
+                        goto basic_json_parser_14;
+                    }
+basic_json_parser_17:
+                    ++m_cursor;
+                    {
+                        last_token_type = token_type::name_separator;
+                        break;
+                    }
+basic_json_parser_19:
+                    ++m_cursor;
+                    {
+                        last_token_type = token_type::begin_array;
+                        break;
+                    }
+basic_json_parser_21:
+                    ++m_cursor;
+                    {
+                        last_token_type = token_type::end_array;
+                        break;
+                    }
+basic_json_parser_23:
+                    yyaccept = 0;
+                    yych = *(m_marker = ++m_cursor);
+                    if (yych == 'a')
+                    {
+                        goto basic_json_parser_43;
+                    }
+                    goto basic_json_parser_5;
+basic_json_parser_24:
+                    yyaccept = 0;
+                    yych = *(m_marker = ++m_cursor);
+                    if (yych == 'u')
+                    {
+                        goto basic_json_parser_44;
+                    }
+                    goto basic_json_parser_5;
+basic_json_parser_25:
+                    yyaccept = 0;
+                    yych = *(m_marker = ++m_cursor);
+                    if (yych == 'r')
+                    {
+                        goto basic_json_parser_45;
+                    }
+                    goto basic_json_parser_5;
+basic_json_parser_26:
+                    ++m_cursor;
+                    {
+                        last_token_type = token_type::begin_object;
+                        break;
+                    }
+basic_json_parser_28:
+                    ++m_cursor;
+                    {
+                        last_token_type = token_type::end_object;
+                        break;
+                    }
+basic_json_parser_30:
+                    yyaccept = 0;
+                    yych = *(m_marker = ++m_cursor);
+                    if (yych == 0xBB)
+                    {
+                        goto basic_json_parser_46;
+                    }
+                    goto basic_json_parser_5;
+basic_json_parser_31:
+                    ++m_cursor;
+                    if (m_limit <= m_cursor)
+                    {
+                        yyfill();    // LCOV_EXCL_LINE;
+                    }
+                    yych = *m_cursor;
+basic_json_parser_32:
+                    if (yybm[0 + yych] & 128)
+                    {
+                        goto basic_json_parser_31;
+                    }
+                    if (yych <= 0x0F)
+                    {
+                        goto basic_json_parser_33;
+                    }
+                    if (yych <= '"')
+                    {
+                        goto basic_json_parser_34;
+                    }
+                    goto basic_json_parser_36;
+basic_json_parser_33:
+                    m_cursor = m_marker;
+                    if (yyaccept <= 1)
+                    {
+                        if (yyaccept == 0)
+                        {
+                            goto basic_json_parser_5;
+                        }
+                        else
+                        {
+                            goto basic_json_parser_14;
+                        }
+                    }
+                    else
+                    {
+                        if (yyaccept == 2)
+                        {
+                            goto basic_json_parser_38;
+                        }
+                        else
+                        {
+                            goto basic_json_parser_50;
+                        }
+                    }
+basic_json_parser_34:
+                    ++m_cursor;
+                    {
+                        last_token_type = token_type::value_string;
+                        break;
+                    }
+basic_json_parser_36:
+                    ++m_cursor;
+                    if (m_limit <= m_cursor)
+                    {
+                        yyfill();    // LCOV_EXCL_LINE;
+                    }
+                    yych = *m_cursor;
+                    if (yych <= 'e')
+                    {
+                        if (yych <= '/')
+                        {
+                            if (yych == '"')
+                            {
+                                goto basic_json_parser_31;
+                            }
+                            if (yych <= '.')
                             {
                                 goto basic_json_parser_33;
                             }
@@ -7811,33 +7813,33 @@ basic_json_parser_36:
                         }
                         else
                         {
-                            if (yych == 'b')
+                            if (yych <= '\\')
                             {
+                                if (yych <= '[')
+                                {
+                                    goto basic_json_parser_33;
+                                }
                                 goto basic_json_parser_31;
                             }
-                            goto basic_json_parser_33;
+                            else
+                            {
+                                if (yych == 'b')
+                                {
+                                    goto basic_json_parser_31;
+                                }
+                                goto basic_json_parser_33;
+                            }
                         }
-                    }
-                }
-                else
-                {
-                    if (yych <= 'q')
-                    {
-                        if (yych <= 'f')
-                        {
-                            goto basic_json_parser_31;
-                        }
-                        if (yych == 'n')
-                        {
-                            goto basic_json_parser_31;
-                        }
-                        goto basic_json_parser_33;
                     }
                     else
                     {
-                        if (yych <= 's')
+                        if (yych <= 'q')
                         {
-                            if (yych <= 'r')
+                            if (yych <= 'f')
+                            {
+                                goto basic_json_parser_31;
+                            }
+                            if (yych == 'n')
                             {
                                 goto basic_json_parser_31;
                             }
@@ -7845,2288 +7847,2307 @@ basic_json_parser_36:
                         }
                         else
                         {
-                            if (yych <= 't')
+                            if (yych <= 's')
                             {
-                                goto basic_json_parser_31;
+                                if (yych <= 'r')
+                                {
+                                    goto basic_json_parser_31;
+                                }
+                                goto basic_json_parser_33;
                             }
-                            if (yych <= 'u')
+                            else
                             {
-                                goto basic_json_parser_47;
+                                if (yych <= 't')
+                                {
+                                    goto basic_json_parser_31;
+                                }
+                                if (yych <= 'u')
+                                {
+                                    goto basic_json_parser_47;
+                                }
+                                goto basic_json_parser_33;
                             }
-                            goto basic_json_parser_33;
                         }
                     }
-                }
 basic_json_parser_37:
-                yyaccept = 2;
-                yych = *(m_marker = ++m_cursor);
-                if (yych <= 'D')
-                {
-                    if (yych == '.')
+                    yyaccept = 2;
+                    yych = *(m_marker = ++m_cursor);
+                    if (yych <= 'D')
                     {
-                        goto basic_json_parser_41;
-                    }
-                }
-                else
-                {
-                    if (yych <= 'E')
-                    {
-                        goto basic_json_parser_42;
-                    }
-                    if (yych == 'e')
-                    {
-                        goto basic_json_parser_42;
-                    }
-                }
-basic_json_parser_38:
-                {
-                    return token_type::value_int;
-                }
-basic_json_parser_39:
-                yyaccept = 2;
-                m_marker = ++m_cursor;
-                if ((m_limit - m_cursor) < 3)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-                if (yych <= '9')
-                {
-                    if (yych == '.')
-                    {
-                        goto basic_json_parser_41;
-                    }
-                    if (yych <= '/')
-                    {
-                        goto basic_json_parser_38;
-                    }
-                    goto basic_json_parser_39;
-                }
-                else
-                {
-                    if (yych <= 'E')
-                    {
-                        if (yych <= 'D')
+                        if (yych == '.')
                         {
-                            goto basic_json_parser_38;
+                            goto basic_json_parser_41;
                         }
-                        goto basic_json_parser_42;
                     }
                     else
                     {
+                        if (yych <= 'E')
+                        {
+                            goto basic_json_parser_42;
+                        }
                         if (yych == 'e')
                         {
                             goto basic_json_parser_42;
                         }
-                        goto basic_json_parser_38;
                     }
-                }
+basic_json_parser_38:
+                    {
+                        last_token_type = token_type::value_int;
+                        break;
+                    }
+basic_json_parser_39:
+                    yyaccept = 2;
+                    m_marker = ++m_cursor;
+                    if ((m_limit - m_cursor) < 3)
+                    {
+                        yyfill();    // LCOV_EXCL_LINE;
+                    }
+                    yych = *m_cursor;
+                    if (yych <= '9')
+                    {
+                        if (yych == '.')
+                        {
+                            goto basic_json_parser_41;
+                        }
+                        if (yych <= '/')
+                        {
+                            goto basic_json_parser_38;
+                        }
+                        goto basic_json_parser_39;
+                    }
+                    else
+                    {
+                        if (yych <= 'E')
+                        {
+                            if (yych <= 'D')
+                            {
+                                goto basic_json_parser_38;
+                            }
+                            goto basic_json_parser_42;
+                        }
+                        else
+                        {
+                            if (yych == 'e')
+                            {
+                                goto basic_json_parser_42;
+                            }
+                            goto basic_json_parser_38;
+                        }
+                    }
 basic_json_parser_41:
-                yych = *++m_cursor;
-                if (yych <= '/')
-                {
+                    yych = *++m_cursor;
+                    if (yych <= '/')
+                    {
+                        goto basic_json_parser_33;
+                    }
+                    if (yych <= '9')
+                    {
+                        goto basic_json_parser_48;
+                    }
                     goto basic_json_parser_33;
-                }
-                if (yych <= '9')
-                {
-                    goto basic_json_parser_48;
-                }
-                goto basic_json_parser_33;
 basic_json_parser_42:
-                yych = *++m_cursor;
-                if (yych <= ',')
-                {
-                    if (yych == '+')
+                    yych = *++m_cursor;
+                    if (yych <= ',')
                     {
-                        goto basic_json_parser_51;
-                    }
-                    goto basic_json_parser_33;
-                }
-                else
-                {
-                    if (yych <= '-')
-                    {
-                        goto basic_json_parser_51;
-                    }
-                    if (yych <= '/')
-                    {
+                        if (yych == '+')
+                        {
+                            goto basic_json_parser_51;
+                        }
                         goto basic_json_parser_33;
                     }
-                    if (yych <= '9')
+                    else
                     {
-                        goto basic_json_parser_52;
+                        if (yych <= '-')
+                        {
+                            goto basic_json_parser_51;
+                        }
+                        if (yych <= '/')
+                        {
+                            goto basic_json_parser_33;
+                        }
+                        if (yych <= '9')
+                        {
+                            goto basic_json_parser_52;
+                        }
+                        goto basic_json_parser_33;
                     }
-                    goto basic_json_parser_33;
-                }
 basic_json_parser_43:
-                yych = *++m_cursor;
-                if (yych == 'l')
-                {
-                    goto basic_json_parser_54;
-                }
-                goto basic_json_parser_33;
+                    yych = *++m_cursor;
+                    if (yych == 'l')
+                    {
+                        goto basic_json_parser_54;
+                    }
+                    goto basic_json_parser_33;
 basic_json_parser_44:
-                yych = *++m_cursor;
-                if (yych == 'l')
-                {
-                    goto basic_json_parser_55;
-                }
-                goto basic_json_parser_33;
+                    yych = *++m_cursor;
+                    if (yych == 'l')
+                    {
+                        goto basic_json_parser_55;
+                    }
+                    goto basic_json_parser_33;
 basic_json_parser_45:
-                yych = *++m_cursor;
-                if (yych == 'u')
-                {
-                    goto basic_json_parser_56;
-                }
-                goto basic_json_parser_33;
+                    yych = *++m_cursor;
+                    if (yych == 'u')
+                    {
+                        goto basic_json_parser_56;
+                    }
+                    goto basic_json_parser_33;
 basic_json_parser_46:
-                yych = *++m_cursor;
-                if (yych == 0xBF)
-                {
-                    goto basic_json_parser_57;
-                }
-                goto basic_json_parser_33;
+                    yych = *++m_cursor;
+                    if (yych == 0xBF)
+                    {
+                        goto basic_json_parser_57;
+                    }
+                    goto basic_json_parser_33;
 basic_json_parser_47:
-                ++m_cursor;
-                if (m_limit <= m_cursor)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-                if (yych <= '@')
-                {
+                    ++m_cursor;
+                    if (m_limit <= m_cursor)
+                    {
+                        yyfill();    // LCOV_EXCL_LINE;
+                    }
+                    yych = *m_cursor;
+                    if (yych <= '@')
+                    {
+                        if (yych <= '/')
+                        {
+                            goto basic_json_parser_33;
+                        }
+                        if (yych <= '9')
+                        {
+                            goto basic_json_parser_59;
+                        }
+                        goto basic_json_parser_33;
+                    }
+                    else
+                    {
+                        if (yych <= 'F')
+                        {
+                            goto basic_json_parser_59;
+                        }
+                        if (yych <= '`')
+                        {
+                            goto basic_json_parser_33;
+                        }
+                        if (yych <= 'f')
+                        {
+                            goto basic_json_parser_59;
+                        }
+                        goto basic_json_parser_33;
+                    }
+basic_json_parser_48:
+                    yyaccept = 3;
+                    m_marker = ++m_cursor;
+                    if ((m_limit - m_cursor) < 3)
+                    {
+                        yyfill();    // LCOV_EXCL_LINE;
+                    }
+                    yych = *m_cursor;
+                    if (yych <= 'D')
+                    {
+                        if (yych <= '/')
+                        {
+                            goto basic_json_parser_50;
+                        }
+                        if (yych <= '9')
+                        {
+                            goto basic_json_parser_48;
+                        }
+                    }
+                    else
+                    {
+                        if (yych <= 'E')
+                        {
+                            goto basic_json_parser_42;
+                        }
+                        if (yych == 'e')
+                        {
+                            goto basic_json_parser_42;
+                        }
+                    }
+basic_json_parser_50:
+                    {
+                        last_token_type = token_type::value_number;
+                        break;
+                    }
+basic_json_parser_51:
+                    yych = *++m_cursor;
                     if (yych <= '/')
                     {
                         goto basic_json_parser_33;
                     }
-                    if (yych <= '9')
-                    {
-                        goto basic_json_parser_59;
-                    }
-                    goto basic_json_parser_33;
-                }
-                else
-                {
-                    if (yych <= 'F')
-                    {
-                        goto basic_json_parser_59;
-                    }
-                    if (yych <= '`')
+                    if (yych >= ':')
                     {
                         goto basic_json_parser_33;
                     }
-                    if (yych <= 'f')
+basic_json_parser_52:
+                    ++m_cursor;
+                    if (m_limit <= m_cursor)
                     {
-                        goto basic_json_parser_59;
+                        yyfill();    // LCOV_EXCL_LINE;
                     }
-                    goto basic_json_parser_33;
-                }
-basic_json_parser_48:
-                yyaccept = 3;
-                m_marker = ++m_cursor;
-                if ((m_limit - m_cursor) < 3)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-                if (yych <= 'D')
-                {
+                    yych = *m_cursor;
                     if (yych <= '/')
                     {
                         goto basic_json_parser_50;
                     }
                     if (yych <= '9')
                     {
-                        goto basic_json_parser_48;
+                        goto basic_json_parser_52;
                     }
-                }
-                else
-                {
-                    if (yych <= 'E')
+                    goto basic_json_parser_50;
+basic_json_parser_54:
+                    yych = *++m_cursor;
+                    if (yych == 's')
                     {
-                        goto basic_json_parser_42;
+                        goto basic_json_parser_60;
                     }
+                    goto basic_json_parser_33;
+basic_json_parser_55:
+                    yych = *++m_cursor;
+                    if (yych == 'l')
+                    {
+                        goto basic_json_parser_61;
+                    }
+                    goto basic_json_parser_33;
+basic_json_parser_56:
+                    yych = *++m_cursor;
                     if (yych == 'e')
                     {
-                        goto basic_json_parser_42;
+                        goto basic_json_parser_63;
                     }
-                }
-basic_json_parser_50:
-                {
-                    return token_type::value_number;
-                }
-basic_json_parser_51:
-                yych = *++m_cursor;
-                if (yych <= '/')
-                {
                     goto basic_json_parser_33;
-                }
-                if (yych >= ':')
-                {
-                    goto basic_json_parser_33;
-                }
-basic_json_parser_52:
-                ++m_cursor;
-                if (m_limit <= m_cursor)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-                if (yych <= '/')
-                {
-                    goto basic_json_parser_50;
-                }
-                if (yych <= '9')
-                {
-                    goto basic_json_parser_52;
-                }
-                goto basic_json_parser_50;
-basic_json_parser_54:
-                yych = *++m_cursor;
-                if (yych == 's')
-                {
-                    goto basic_json_parser_60;
-                }
-                goto basic_json_parser_33;
-basic_json_parser_55:
-                yych = *++m_cursor;
-                if (yych == 'l')
-                {
-                    goto basic_json_parser_61;
-                }
-                goto basic_json_parser_33;
-basic_json_parser_56:
-                yych = *++m_cursor;
-                if (yych == 'e')
-                {
-                    goto basic_json_parser_63;
-                }
-                goto basic_json_parser_33;
 basic_json_parser_57:
-                ++m_cursor;
-                {
-                    return scan();
-                }
+                    ++m_cursor;
+                    {
+                        continue;
+                    }
 basic_json_parser_59:
-                ++m_cursor;
-                if (m_limit <= m_cursor)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-                if (yych <= '@')
-                {
-                    if (yych <= '/')
+                    ++m_cursor;
+                    if (m_limit <= m_cursor)
                     {
+                        yyfill();    // LCOV_EXCL_LINE;
+                    }
+                    yych = *m_cursor;
+                    if (yych <= '@')
+                    {
+                        if (yych <= '/')
+                        {
+                            goto basic_json_parser_33;
+                        }
+                        if (yych <= '9')
+                        {
+                            goto basic_json_parser_65;
+                        }
                         goto basic_json_parser_33;
                     }
-                    if (yych <= '9')
+                    else
                     {
-                        goto basic_json_parser_65;
-                    }
-                    goto basic_json_parser_33;
-                }
-                else
-                {
-                    if (yych <= 'F')
-                    {
-                        goto basic_json_parser_65;
-                    }
-                    if (yych <= '`')
-                    {
+                        if (yych <= 'F')
+                        {
+                            goto basic_json_parser_65;
+                        }
+                        if (yych <= '`')
+                        {
+                            goto basic_json_parser_33;
+                        }
+                        if (yych <= 'f')
+                        {
+                            goto basic_json_parser_65;
+                        }
                         goto basic_json_parser_33;
                     }
-                    if (yych <= 'f')
-                    {
-                        goto basic_json_parser_65;
-                    }
-                    goto basic_json_parser_33;
-                }
 basic_json_parser_60:
-                yych = *++m_cursor;
-                if (yych == 'e')
-                {
-                    goto basic_json_parser_66;
-                }
-                goto basic_json_parser_33;
+                    yych = *++m_cursor;
+                    if (yych == 'e')
+                    {
+                        goto basic_json_parser_66;
+                    }
+                    goto basic_json_parser_33;
 basic_json_parser_61:
-                ++m_cursor;
-                {
-                    return token_type::literal_null;
-                }
+                    ++m_cursor;
+                    {
+                        last_token_type = token_type::literal_null;
+                        break;
+                    }
 basic_json_parser_63:
-                ++m_cursor;
-                {
-                    return token_type::literal_true;
-                }
+                    ++m_cursor;
+                    {
+                        last_token_type = token_type::literal_true;
+                        break;
+                    }
 basic_json_parser_65:
-                ++m_cursor;
-                if (m_limit <= m_cursor)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-                if (yych <= '@')
-                {
-                    if (yych <= '/')
+                    ++m_cursor;
+                    if (m_limit <= m_cursor)
                     {
+                        yyfill();    // LCOV_EXCL_LINE;
+                    }
+                    yych = *m_cursor;
+                    if (yych <= '@')
+                    {
+                        if (yych <= '/')
+                        {
+                            goto basic_json_parser_33;
+                        }
+                        if (yych <= '9')
+                        {
+                            goto basic_json_parser_68;
+                        }
                         goto basic_json_parser_33;
                     }
-                    if (yych <= '9')
+                    else
                     {
-                        goto basic_json_parser_68;
-                    }
-                    goto basic_json_parser_33;
-                }
-                else
-                {
-                    if (yych <= 'F')
-                    {
-                        goto basic_json_parser_68;
-                    }
-                    if (yych <= '`')
-                    {
+                        if (yych <= 'F')
+                        {
+                            goto basic_json_parser_68;
+                        }
+                        if (yych <= '`')
+                        {
+                            goto basic_json_parser_33;
+                        }
+                        if (yych <= 'f')
+                        {
+                            goto basic_json_parser_68;
+                        }
                         goto basic_json_parser_33;
                     }
-                    if (yych <= 'f')
-                    {
-                        goto basic_json_parser_68;
-                    }
-                    goto basic_json_parser_33;
-                }
 basic_json_parser_66:
-                ++m_cursor;
-                {
-                    return token_type::literal_false;
-                }
+                    ++m_cursor;
+                    {
+                        last_token_type = token_type::literal_false;
+                        break;
+                    }
 basic_json_parser_68:
-                ++m_cursor;
-                if (m_limit <= m_cursor)
-                {
-                    yyfill();    // LCOV_EXCL_LINE;
-                }
-                yych = *m_cursor;
-                if (yych <= '@')
-                {
-                    if (yych <= '/')
+                    ++m_cursor;
+                    if (m_limit <= m_cursor)
                     {
+                        yyfill();    // LCOV_EXCL_LINE;
+                    }
+                    yych = *m_cursor;
+                    if (yych <= '@')
+                    {
+                        if (yych <= '/')
+                        {
+                            goto basic_json_parser_33;
+                        }
+                        if (yych <= '9')
+                        {
+                            goto basic_json_parser_31;
+                        }
                         goto basic_json_parser_33;
                     }
-                    if (yych <= '9')
+                    else
                     {
-                        goto basic_json_parser_31;
-                    }
-                    goto basic_json_parser_33;
-                }
-                else
-                {
-                    if (yych <= 'F')
-                    {
-                        goto basic_json_parser_31;
-                    }
-                    if (yych <= '`')
-                    {
+                        if (yych <= 'F')
+                        {
+                            goto basic_json_parser_31;
+                        }
+                        if (yych <= '`')
+                        {
+                            goto basic_json_parser_33;
+                        }
+                        if (yych <= 'f')
+                        {
+                            goto basic_json_parser_31;
+                        }
                         goto basic_json_parser_33;
                     }
-                    if (yych <= 'f')
-                    {
-                        goto basic_json_parser_31;
-                    }
-                    goto basic_json_parser_33;
                 }
+
+
+                return last_token_type;
             }
 
-        }
-
-        /// append data from the stream to the internal buffer
-        void yyfill() noexcept
-        {
-            if (m_stream == nullptr or not * m_stream)
+            /// append data from the stream to the internal buffer
+            void yyfill() noexcept
             {
-                return;
-            }
-
-            const auto offset_start = m_start - m_content;
-            const auto offset_marker = m_marker - m_start;
-            const auto offset_cursor = m_cursor - m_start;
-
-            m_buffer.erase(0, static_cast<size_t>(offset_start));
-            std::string line;
-            assert(m_stream != nullptr);
-            std::getline(*m_stream, line);
-            m_buffer += "\n" + line; // add line with newline symbol
-
-            m_content = reinterpret_cast<const lexer_char_t*>(m_buffer.c_str());
-            assert(m_content != nullptr);
-            m_start  = m_content;
-            m_marker = m_start + offset_marker;
-            m_cursor = m_start + offset_cursor;
-            m_limit  = m_start + m_buffer.size() - 1;
-        }
-
-        /// return string representation of last read token
-        string_t get_token_string() const
-        {
-            assert(m_start != nullptr);
-            return string_t(reinterpret_cast<typename string_t::const_pointer>(m_start),
-                            static_cast<size_t>(m_cursor - m_start));
-        }
-
-        /*!
-        @brief return string value for string tokens
-
-        The function iterates the characters between the opening and closing
-        quotes of the string value. The complete string is the range
-        [m_start,m_cursor). Consequently, we iterate from m_start+1 to
-        m_cursor-1.
-
-        We differentiate two cases:
-
-        1. Escaped characters. In this case, a new character is constructed
-           according to the nature of the escape. Some escapes create new
-           characters (e.g., `"\\n"` is replaced by `"\n"`), some are copied
-           as is (e.g., `"\\\\"`). Furthermore, Unicode escapes of the shape
-           `"\\uxxxx"` need special care. In this case, to_unicode takes care
-           of the construction of the values.
-        2. Unescaped characters are copied as is.
-
-        @return string value of current token without opening and closing
-        quotes
-        @throw std::out_of_range if to_unicode fails
-        */
-        string_t get_string() const
-        {
-            string_t result;
-            result.reserve(static_cast<size_t>(m_cursor - m_start - 2));
-
-            // iterate the result between the quotes
-            for (const lexer_char_t* i = m_start + 1; i < m_cursor - 1; ++i)
-            {
-                // process escaped characters
-                if (*i == '\\')
+                if (m_stream == nullptr or not * m_stream)
                 {
-                    // read next character
-                    ++i;
+                    return;
+                }
 
-                    switch (*i)
+                const auto offset_start = m_start - m_content;
+                const auto offset_marker = m_marker - m_start;
+                const auto offset_cursor = m_cursor - m_start;
+
+                m_buffer.erase(0, static_cast<size_t>(offset_start));
+                std::string line;
+                assert(m_stream != nullptr);
+                std::getline(*m_stream, line);
+                m_buffer += "\n" + line; // add line with newline symbol
+
+                m_content = reinterpret_cast<const lexer_char_t*>(m_buffer.c_str());
+                assert(m_content != nullptr);
+                m_start  = m_content;
+                m_marker = m_start + offset_marker;
+                m_cursor = m_start + offset_cursor;
+                m_limit  = m_start + m_buffer.size() - 1;
+            }
+
+            /// return string representation of last read token
+            string_t get_token_string() const
+            {
+                assert(m_start != nullptr);
+                return string_t(reinterpret_cast<typename string_t::const_pointer>(m_start),
+                                static_cast<size_t>(m_cursor - m_start));
+            }
+
+            /*!
+            @brief return string value for string tokens
+
+            The function iterates the characters between the opening and closing
+            quotes of the string value. The complete string is the range
+            [m_start,m_cursor). Consequently, we iterate from m_start+1 to
+            m_cursor-1.
+
+            We differentiate two cases:
+
+            1. Escaped characters. In this case, a new character is constructed
+               according to the nature of the escape. Some escapes create new
+               characters (e.g., `"\\n"` is replaced by `"\n"`), some are copied
+               as is (e.g., `"\\\\"`). Furthermore, Unicode escapes of the shape
+               `"\\uxxxx"` need special care. In this case, to_unicode takes care
+               of the construction of the values.
+            2. Unescaped characters are copied as is.
+
+            @return string value of current token without opening and closing
+            quotes
+            @throw std::out_of_range if to_unicode fails
+            */
+            string_t get_string() const
+            {
+                string_t result;
+                result.reserve(static_cast<size_t>(m_cursor - m_start - 2));
+
+                // iterate the result between the quotes
+                for (const lexer_char_t* i = m_start + 1; i < m_cursor - 1; ++i)
+                {
+                    // process escaped characters
+                    if (*i == '\\')
                     {
-                        // the default escapes
-                        case 't':
-                        {
-                            result += "\t";
-                            break;
-                        }
-                        case 'b':
-                        {
-                            result += "\b";
-                            break;
-                        }
-                        case 'f':
-                        {
-                            result += "\f";
-                            break;
-                        }
-                        case 'n':
-                        {
-                            result += "\n";
-                            break;
-                        }
-                        case 'r':
-                        {
-                            result += "\r";
-                            break;
-                        }
-                        case '\\':
-                        {
-                            result += "\\";
-                            break;
-                        }
-                        case '/':
-                        {
-                            result += "/";
-                            break;
-                        }
-                        case '"':
-                        {
-                            result += "\"";
-                            break;
-                        }
+                        // read next character
+                        ++i;
 
-                        // unicode
-                        case 'u':
+                        switch (*i)
                         {
-                            // get code xxxx from uxxxx
-                            auto codepoint = std::strtoul(std::string(reinterpret_cast<typename string_t::const_pointer>(i + 1),
-                                                          4).c_str(), nullptr, 16);
-
-                            // check if codepoint is a high surrogate
-                            if (codepoint >= 0xD800 and codepoint <= 0xDBFF)
+                            // the default escapes
+                            case 't':
                             {
-                                // make sure there is a subsequent unicode
-                                if ((i + 6 >= m_limit) or * (i + 5) != '\\' or * (i + 6) != 'u')
+                                result += "\t";
+                                break;
+                            }
+                            case 'b':
+                            {
+                                result += "\b";
+                                break;
+                            }
+                            case 'f':
+                            {
+                                result += "\f";
+                                break;
+                            }
+                            case 'n':
+                            {
+                                result += "\n";
+                                break;
+                            }
+                            case 'r':
+                            {
+                                result += "\r";
+                                break;
+                            }
+                            case '\\':
+                            {
+                                result += "\\";
+                                break;
+                            }
+                            case '/':
+                            {
+                                result += "/";
+                                break;
+                            }
+                            case '"':
+                            {
+                                result += "\"";
+                                break;
+                            }
+
+                            // unicode
+                            case 'u':
+                            {
+                                // get code xxxx from uxxxx
+                                auto codepoint = std::strtoul(std::string(reinterpret_cast<typename string_t::const_pointer>(i + 1),
+                                                              4).c_str(), nullptr, 16);
+
+                                // check if codepoint is a high surrogate
+                                if (codepoint >= 0xD800 and codepoint <= 0xDBFF)
                                 {
-                                    throw std::invalid_argument("missing low surrogate");
-                                }
+                                    // make sure there is a subsequent unicode
+                                    if ((i + 6 >= m_limit) or * (i + 5) != '\\' or * (i + 6) != 'u')
+                                    {
+                                        throw std::invalid_argument("missing low surrogate");
+                                    }
 
-                                // get code yyyy from uxxxx\uyyyy
-                                auto codepoint2 = std::strtoul(std::string(reinterpret_cast<typename string_t::const_pointer>
-                                                               (i + 7), 4).c_str(), nullptr, 16);
-                                result += to_unicode(codepoint, codepoint2);
-                                // skip the next 10 characters (xxxx\uyyyy)
-                                i += 10;
+                                    // get code yyyy from uxxxx\uyyyy
+                                    auto codepoint2 = std::strtoul(std::string(reinterpret_cast<typename string_t::const_pointer>
+                                                                   (i + 7), 4).c_str(), nullptr, 16);
+                                    result += to_unicode(codepoint, codepoint2);
+                                    // skip the next 10 characters (xxxx\uyyyy)
+                                    i += 10;
+                                }
+                                else
+                                {
+                                    // add unicode character(s)
+                                    result += to_unicode(codepoint);
+                                    // skip the next four characters (xxxx)
+                                    i += 4;
+                                }
+                                break;
                             }
-                            else
-                            {
-                                // add unicode character(s)
-                                result += to_unicode(codepoint);
-                                // skip the next four characters (xxxx)
-                                i += 4;
-                            }
-                            break;
                         }
                     }
-                }
-                else
-                {
-                    // all other characters are just copied to the end of the
-                    // string
-                    result.append(1, static_cast<typename string_t::value_type>(*i));
-                }
-            }
-
-            return result;
-        }
-
-        /*!
-        @brief parse floating point number
-
-        This function (and its overloads) serves to select the most approprate
-        standard floating point number parsing function based on the type
-        supplied via the first parameter.  Set this to @a
-        static_cast<number_float_t*>(nullptr).
-
-        @param[in] type  the @ref number_float_t in use
-
-        @param[in,out] endptr recieves a pointer to the first character after
-        the number
-
-        @return the floating point number
-        */
-        long double str_to_float_t(long double* /* type */, char** endptr) const
-        {
-            return std::strtold(reinterpret_cast<typename string_t::const_pointer>(m_start), endptr);
-        }
-
-        /*!
-        @copydoc str_to_float_t()
-        */
-        double str_to_float_t(double* /* type */, char** endptr) const
-        {
-            return std::strtod(reinterpret_cast<typename string_t::const_pointer>(m_start), endptr);
-        }
-
-        /*!
-        @copydoc str_to_float_t()
-        */
-        float str_to_float_t(float* /* type */, char** endptr) const
-        {
-            return std::strtof(reinterpret_cast<typename string_t::const_pointer>(m_start), endptr);
-        }
-
-        /*!
-        @brief parse floating-point number
-
-        @param[in,out] result @ref basic_json object to receive the number, or
-        NAN if the conversion read past the current token. The latter case
-        needs to be treated by the caller function.
-        */
-        void get_number_float(basic_json& result) const
-        {
-            assert(m_start != nullptr);
-
-            // parse with std::strtof, std::strtod, or std::strtold
-            result.m_value.number_float = str_to_float_t(static_cast<number_float_t*>(nullptr), NULL);
-
-            // save the type
-            result.m_type = value_t::number_float;
-        }
-
-        /*!
-        @brief string to unsigned integer conversion
-
-        Converts the last string read by the lexer to an unsigned integer
-        number assuming a base of 10. Negative numbers shall be converted by
-        ignoring the leading '-' by setting @a skip_first to false. Negating
-        the value is in the responsability of the caller.
-
-        @param[out] result  the result of the conversion
-        @param skip_first  whether the first character should be skipped
-
-        @tparam T  an unsigned integer type
-
-        @return true iff overflow occurred; false if conversion succeeded
-
-        @pre The re2c lexer has successfully parsed an integer number. Only
-        two cases are valid: (1) all characters between m_start and m_cursor
-        are digits (unsigned integer) and @a skip_first is set to false, or
-        (2) the character at m_start is a '-' which will be ignored (@a
-        skip_first is set to true) and all other characters until m_cursor
-        are digits (signed integer).
-
-        @post Either the string between m_start and m_cursor is processed
-        completely, @a result contains the parsed number, and the function
-        returns false; or parsing was interrupted prematurely, because an
-        overflow was detected. Then, the function returns true.
-        */
-        template<typename T>
-        bool get_uint(T& result, bool skip_first) const
-        {
-            assert(m_start != nullptr);
-            assert(m_start != m_cursor);
-
-            // initially, set the result to 0
-            result = 0;
-
-            // maximal possible value for number_unsigned_t
-            static const T max_value = std::numeric_limits<T>::max();
-            // maximal intermediate value before multiplying by 10
-            static const T max_intermediate = max_value / 10;
-
-            /// pointer to the first digit (possibly skipping a '-')
-            const auto first_digit = skip_first ? (m_start + 1) : m_start;
-
-            // after re2c successfully parsed a number, the digits are between
-            // first_digit and m_cursor
-            for (auto p = first_digit; p != m_cursor; ++p)
-            {
-                // check if multiplying by 10 would result in overflow
-                if (result > max_intermediate)
-                {
-                    // signal overflow
-                    return true;
-                }
-
-                result *= 10;
-
-                // the current digit
-                const T digit = static_cast<T>(*reinterpret_cast<typename string_t::const_pointer>(p) - '0');
-
-                // check if adding the digit would result in overflow
-                if (digit > (max_value - result))
-                {
-                    // signal overflow
-                    return true;
-                }
-
-                result += digit;
-            }
-
-            // signal absence of overflow
-            return false;
-        }
-
-
-        /*!
-        @brief parse unsigned integer number
-
-        @param[in,out] result @ref basic_json object to receive the number, or
-        NAN if the conversion read past the current token. The latter case
-        needs to be treated by the caller function.
-
-        @note If an overflow wrt. type @ref number_unsigned_t occurs, the
-        number is processed as floating-point by @ref get_number_float().
-        */
-        void get_number_uint(basic_json& result) const
-        {
-            // optimistically set result to unsigned int
-            result.m_type = value_t::number_unsigned;
-
-            // parse the number
-            const bool overflow = get_uint(result.m_value.number_unsigned, false);
-
-            // if an overflow occurred, try again parsing the number to float
-            if (overflow)
-            {
-                get_number_float(result);
-            }
-        }
-
-        /*!
-        @brief parse signed integer number
-
-        @param[in,out] result @ref basic_json object to receive the number, or
-        NAN if the conversion read past the current token. The latter case
-        needs to be treated by the caller function.
-
-        @note If an overflow wrt. type @ref number_integer_t occurs, the
-        number is processed as floating-point by @ref get_number_float().
-        */
-        void get_number_int(basic_json& result) const
-        {
-            // optimistically set result to int
-            result.m_type = value_t::number_integer;
-
-            // parse as unsigned integer (skip the leading '-')
-            number_unsigned_t unsigned_value = 0;
-            const bool overflow = get_uint(unsigned_value, true);
-
-            // store negated number
-            result.m_value.number_integer = static_cast<number_integer_t>(-unsigned_value);
-
-            // if an overflow occurred, try again parsing the number to float;
-            // note that, assuming min = -(max + 1), we have an underflow
-            // iff  -unsigned_value     < min
-            // iff  -unsigned_value     < -(max + 1)
-            // iff   unsigned_value     > max + 1
-            // iff   unsigned_value - 1 > max
-            if (overflow or (unsigned_value - 1) > std::numeric_limits<number_integer_t>::max())
-            {
-                get_number_float(result);
-            }
-        }
-
-      private:
-        /// optional input stream
-        std::istream* m_stream = nullptr;
-        /// the buffer
-        string_t m_buffer;
-        /// the buffer pointer
-        const lexer_char_t* m_content = nullptr;
-        /// pointer to the beginning of the current symbol
-        const lexer_char_t* m_start = nullptr;
-        /// pointer for backtracking information
-        const lexer_char_t* m_marker = nullptr;
-        /// pointer to the current symbol
-        const lexer_char_t* m_cursor = nullptr;
-        /// pointer to the end of the buffer
-        const lexer_char_t* m_limit = nullptr;
-    };
-
-    /*!
-    @brief syntax analysis
-
-    This class implements a recursive decent parser.
-    */
-    class parser
-    {
-      public:
-        /// constructor for strings
-        parser(const string_t& s, parser_callback_t cb = nullptr) noexcept
-            : callback(cb), m_lexer(s)
-        {
-            // read first token
-            get_token();
-        }
-
-        /// a parser reading from an input stream
-        parser(std::istream& _is, parser_callback_t cb = nullptr) noexcept
-            : callback(cb), m_lexer(&_is)
-        {
-            // read first token
-            get_token();
-        }
-
-        /// public parser interface
-        basic_json parse()
-        {
-            basic_json result = parse_internal(true);
-
-            expect(lexer::token_type::end_of_input);
-
-            // return parser result and replace it with null in case the
-            // top-level value was discarded by the callback function
-            return result.is_discarded() ? basic_json() : std::move(result);
-        }
-
-      private:
-        /// the actual parser
-        basic_json parse_internal(bool keep)
-        {
-            auto result = basic_json(value_t::discarded);
-
-            switch (last_token)
-            {
-                case lexer::token_type::begin_object:
-                {
-                    if (keep and (not callback or (keep = callback(depth++, parse_event_t::object_start, result))))
+                    else
                     {
-                        // explicitly set result to object to cope with {}
-                        result.m_type = value_t::object;
-                        result.m_value = json_value(value_t::object);
+                        // all other characters are just copied to the end of the
+                        // string
+                        result.append(1, static_cast<typename string_t::value_type>(*i));
+                    }
+                }
+
+                return result;
+            }
+
+            /*!
+            @brief parse floating point number
+
+            This function (and its overloads) serves to select the most approprate
+            standard floating point number parsing function based on the type
+            supplied via the first parameter.  Set this to @a
+            static_cast<number_float_t*>(nullptr).
+
+            @param[in] type  the @ref number_float_t in use
+
+            @param[in,out] endptr recieves a pointer to the first character after
+            the number
+
+            @return the floating point number
+            */
+            long double str_to_float_t(long double* /* type */, char** endptr) const
+            {
+                return std::strtold(reinterpret_cast<typename string_t::const_pointer>(m_start), endptr);
+            }
+
+            /*!
+            @copydoc str_to_float_t()
+            */
+            double str_to_float_t(double* /* type */, char** endptr) const
+            {
+                return std::strtod(reinterpret_cast<typename string_t::const_pointer>(m_start), endptr);
+            }
+
+            /*!
+            @copydoc str_to_float_t()
+            */
+            float str_to_float_t(float* /* type */, char** endptr) const
+            {
+                return std::strtof(reinterpret_cast<typename string_t::const_pointer>(m_start), endptr);
+            }
+
+            /*!
+            @brief parse floating-point number
+
+            @param[in,out] result @ref basic_json object to receive the number, or
+            NAN if the conversion read past the current token. The latter case
+            needs to be treated by the caller function.
+            */
+            void get_number_float(basic_json & result) const
+            {
+                assert(m_start != nullptr);
+
+                // parse with std::strtof, std::strtod, or std::strtold
+                result.m_value.number_float = str_to_float_t(static_cast<number_float_t*>(nullptr), NULL);
+
+                // save the type
+                result.m_type = value_t::number_float;
+            }
+
+            /*!
+            @brief string to unsigned integer conversion
+
+            Converts the last string read by the lexer to an unsigned integer
+            number assuming a base of 10. Negative numbers shall be converted by
+            ignoring the leading '-' by setting @a skip_first to false. Negating
+            the value is in the responsability of the caller.
+
+            @param[out] result  the result of the conversion
+            @param skip_first  whether the first character should be skipped
+
+            @tparam T  an unsigned integer type
+
+            @return true iff overflow occurred; false if conversion succeeded
+
+            @pre The re2c lexer has successfully parsed an integer number. Only
+            two cases are valid: (1) all characters between m_start and m_cursor
+            are digits (unsigned integer) and @a skip_first is set to false, or
+            (2) the character at m_start is a '-' which will be ignored (@a
+            skip_first is set to true) and all other characters until m_cursor
+            are digits (signed integer).
+
+            @post Either the string between m_start and m_cursor is processed
+            completely, @a result contains the parsed number, and the function
+            returns false; or parsing was interrupted prematurely, because an
+            overflow was detected. Then, the function returns true.
+            */
+            template<typename T>
+            bool get_uint(T & result, bool skip_first) const
+            {
+                assert(m_start != nullptr);
+                assert(m_start != m_cursor);
+
+                // initially, set the result to 0
+                result = 0;
+
+                // maximal possible value for number_unsigned_t
+                static const T max_value = std::numeric_limits<T>::max();
+                // maximal intermediate value before multiplying by 10
+                static const T max_intermediate = max_value / 10;
+
+                /// pointer to the first digit (possibly skipping a '-')
+                const auto first_digit = skip_first ? (m_start + 1) : m_start;
+
+                // after re2c successfully parsed a number, the digits are between
+                // first_digit and m_cursor
+                for (auto p = first_digit; p != m_cursor; ++p)
+                {
+                    // check if multiplying by 10 would result in overflow
+                    if (result > max_intermediate)
+                    {
+                        // signal overflow
+                        return true;
                     }
 
-                    // read next token
-                    get_token();
+                    result *= 10;
 
-                    // closing } -> we are done
-                    if (last_token == lexer::token_type::end_object)
+                    // the current digit
+                    const T digit = static_cast<T>(*reinterpret_cast<typename string_t::const_pointer>(p) - '0');
+
+                    // check if adding the digit would result in overflow
+                    if (digit > (max_value - result))
                     {
+                        // signal overflow
+                        return true;
+                    }
+
+                    result += digit;
+                }
+
+                // signal absence of overflow
+                return false;
+            }
+
+
+            /*!
+            @brief parse unsigned integer number
+
+            @param[in,out] result @ref basic_json object to receive the number, or
+            NAN if the conversion read past the current token. The latter case
+            needs to be treated by the caller function.
+
+            @note If an overflow wrt. type @ref number_unsigned_t occurs, the
+            number is processed as floating-point by @ref get_number_float().
+            */
+            void get_number_uint(basic_json & result) const
+            {
+                // optimistically set result to unsigned int
+                result.m_type = value_t::number_unsigned;
+
+                // parse the number
+                const bool overflow = get_uint(result.m_value.number_unsigned, false);
+
+                // if an overflow occurred, try again parsing the number to float
+                if (overflow)
+                {
+                    get_number_float(result);
+                }
+            }
+
+            /*!
+            @brief parse signed integer number
+
+            @param[in,out] result @ref basic_json object to receive the number, or
+            NAN if the conversion read past the current token. The latter case
+            needs to be treated by the caller function.
+
+            @note If an overflow wrt. type @ref number_integer_t occurs, the
+            number is processed as floating-point by @ref get_number_float().
+            */
+            void get_number_int(basic_json & result) const
+            {
+                // optimistically set result to int
+                result.m_type = value_t::number_integer;
+
+                // parse as unsigned integer (skip the leading '-')
+                number_unsigned_t unsigned_value = 0;
+                const bool overflow = get_uint(unsigned_value, true);
+
+                // store negated number
+                result.m_value.number_integer = static_cast<number_integer_t>(-unsigned_value);
+
+                // if an overflow occurred, try again parsing the number to float;
+                // note that, assuming min = -(max + 1), we have an underflow
+                // iff  -unsigned_value     < min
+                // iff  -unsigned_value     < -(max + 1)
+                // iff   unsigned_value     > max + 1
+                // iff   unsigned_value - 1 > max
+                if (overflow or (unsigned_value - 1) > std::numeric_limits<number_integer_t>::max())
+                {
+                    get_number_float(result);
+                }
+            }
+
+private:
+            /// optional input stream
+            std::istream* m_stream = nullptr;
+            /// the buffer
+            string_t m_buffer;
+            /// the buffer pointer
+            const lexer_char_t* m_content = nullptr;
+            /// pointer to the beginning of the current symbol
+            const lexer_char_t* m_start = nullptr;
+            /// pointer for backtracking information
+            const lexer_char_t* m_marker = nullptr;
+            /// pointer to the current symbol
+            const lexer_char_t* m_cursor = nullptr;
+            /// pointer to the end of the buffer
+            const lexer_char_t* m_limit = nullptr;
+            /// the last token type
+            token_type last_token_type = token_type::end_of_input;
+        };
+
+        /*!
+        @brief syntax analysis
+
+        This class implements a recursive decent parser.
+        */
+        class parser
+        {
+          public:
+            /// constructor for strings
+            parser(const string_t& s, parser_callback_t cb = nullptr) noexcept
+                : callback(cb), m_lexer(s)
+            {
+                // read first token
+                get_token();
+            }
+
+            /// a parser reading from an input stream
+            parser(std::istream& _is, parser_callback_t cb = nullptr) noexcept
+                : callback(cb), m_lexer(&_is)
+            {
+                // read first token
+                get_token();
+            }
+
+            /// public parser interface
+            basic_json parse()
+            {
+                basic_json result = parse_internal(true);
+
+                expect(lexer::token_type::end_of_input);
+
+                // return parser result and replace it with null in case the
+                // top-level value was discarded by the callback function
+                return result.is_discarded() ? basic_json() : std::move(result);
+            }
+
+          private:
+            /// the actual parser
+            basic_json parse_internal(bool keep)
+            {
+                auto result = basic_json(value_t::discarded);
+
+                switch (last_token)
+                {
+                    case lexer::token_type::begin_object:
+                    {
+                        if (keep and (not callback or (keep = callback(depth++, parse_event_t::object_start, result))))
+                        {
+                            // explicitly set result to object to cope with {}
+                            result.m_type = value_t::object;
+                            result.m_value = json_value(value_t::object);
+                        }
+
+                        // read next token
+                        get_token();
+
+                        // closing } -> we are done
+                        if (last_token == lexer::token_type::end_object)
+                        {
+                            get_token();
+                            if (keep and callback and not callback(--depth, parse_event_t::object_end, result))
+                            {
+                                result = basic_json(value_t::discarded);
+                            }
+                            return result;
+                        }
+
+                        // no comma is expected here
+                        unexpect(lexer::token_type::value_separator);
+
+                        // otherwise: parse key-value pairs
+                        do
+                        {
+                            // ugly, but could be fixed with loop reorganization
+                            if (last_token == lexer::token_type::value_separator)
+                            {
+                                get_token();
+                            }
+
+                            // store key
+                            expect(lexer::token_type::value_string);
+                            const auto key = m_lexer.get_string();
+
+                            bool keep_tag = false;
+                            if (keep)
+                            {
+                                if (callback)
+                                {
+                                    basic_json k(key);
+                                    keep_tag = callback(depth, parse_event_t::key, k);
+                                }
+                                else
+                                {
+                                    keep_tag = true;
+                                }
+                            }
+
+                            // parse separator (:)
+                            get_token();
+                            expect(lexer::token_type::name_separator);
+
+                            // parse and add value
+                            get_token();
+                            auto value = parse_internal(keep);
+                            if (keep and keep_tag and not value.is_discarded())
+                            {
+                                result[key] = std::move(value);
+                            }
+                        }
+                        while (last_token == lexer::token_type::value_separator);
+
+                        // closing }
+                        expect(lexer::token_type::end_object);
                         get_token();
                         if (keep and callback and not callback(--depth, parse_event_t::object_end, result))
                         {
                             result = basic_json(value_t::discarded);
                         }
+
                         return result;
                     }
 
-                    // no comma is expected here
-                    unexpect(lexer::token_type::value_separator);
-
-                    // otherwise: parse key-value pairs
-                    do
+                    case lexer::token_type::begin_array:
                     {
-                        // ugly, but could be fixed with loop reorganization
-                        if (last_token == lexer::token_type::value_separator)
+                        if (keep and (not callback or (keep = callback(depth++, parse_event_t::array_start, result))))
+                        {
+                            // explicitly set result to object to cope with []
+                            result.m_type = value_t::array;
+                            result.m_value = json_value(value_t::array);
+                        }
+
+                        // read next token
+                        get_token();
+
+                        // closing ] -> we are done
+                        if (last_token == lexer::token_type::end_array)
                         {
                             get_token();
-                        }
-
-                        // store key
-                        expect(lexer::token_type::value_string);
-                        const auto key = m_lexer.get_string();
-
-                        bool keep_tag = false;
-                        if (keep)
-                        {
-                            if (callback)
+                            if (callback and not callback(--depth, parse_event_t::array_end, result))
                             {
-                                basic_json k(key);
-                                keep_tag = callback(depth, parse_event_t::key, k);
+                                result = basic_json(value_t::discarded);
                             }
-                            else
-                            {
-                                keep_tag = true;
-                            }
+                            return result;
                         }
 
-                        // parse separator (:)
-                        get_token();
-                        expect(lexer::token_type::name_separator);
+                        // no comma is expected here
+                        unexpect(lexer::token_type::value_separator);
 
-                        // parse and add value
-                        get_token();
-                        auto value = parse_internal(keep);
-                        if (keep and keep_tag and not value.is_discarded())
+                        // otherwise: parse values
+                        do
                         {
-                            result[key] = std::move(value);
+                            // ugly, but could be fixed with loop reorganization
+                            if (last_token == lexer::token_type::value_separator)
+                            {
+                                get_token();
+                            }
+
+                            // parse value
+                            auto value = parse_internal(keep);
+                            if (keep and not value.is_discarded())
+                            {
+                                result.push_back(std::move(value));
+                            }
                         }
-                    }
-                    while (last_token == lexer::token_type::value_separator);
+                        while (last_token == lexer::token_type::value_separator);
 
-                    // closing }
-                    expect(lexer::token_type::end_object);
-                    get_token();
-                    if (keep and callback and not callback(--depth, parse_event_t::object_end, result))
-                    {
-                        result = basic_json(value_t::discarded);
-                    }
-
-                    return result;
-                }
-
-                case lexer::token_type::begin_array:
-                {
-                    if (keep and (not callback or (keep = callback(depth++, parse_event_t::array_start, result))))
-                    {
-                        // explicitly set result to object to cope with []
-                        result.m_type = value_t::array;
-                        result.m_value = json_value(value_t::array);
-                    }
-
-                    // read next token
-                    get_token();
-
-                    // closing ] -> we are done
-                    if (last_token == lexer::token_type::end_array)
-                    {
+                        // closing ]
+                        expect(lexer::token_type::end_array);
                         get_token();
-                        if (callback and not callback(--depth, parse_event_t::array_end, result))
+                        if (keep and callback and not callback(--depth, parse_event_t::array_end, result))
                         {
                             result = basic_json(value_t::discarded);
                         }
+
                         return result;
                     }
 
-                    // no comma is expected here
-                    unexpect(lexer::token_type::value_separator);
-
-                    // otherwise: parse values
-                    do
+                    case lexer::token_type::literal_null:
                     {
-                        // ugly, but could be fixed with loop reorganization
-                        if (last_token == lexer::token_type::value_separator)
-                        {
-                            get_token();
-                        }
-
-                        // parse value
-                        auto value = parse_internal(keep);
-                        if (keep and not value.is_discarded())
-                        {
-                            result.push_back(std::move(value));
-                        }
-                    }
-                    while (last_token == lexer::token_type::value_separator);
-
-                    // closing ]
-                    expect(lexer::token_type::end_array);
-                    get_token();
-                    if (keep and callback and not callback(--depth, parse_event_t::array_end, result))
-                    {
-                        result = basic_json(value_t::discarded);
+                        get_token();
+                        result.m_type = value_t::null;
+                        break;
                     }
 
-                    return result;
+                    case lexer::token_type::value_string:
+                    {
+                        const auto s = m_lexer.get_string();
+                        get_token();
+                        result = basic_json(s);
+                        break;
+                    }
+
+                    case lexer::token_type::literal_true:
+                    {
+                        get_token();
+                        result.m_type = value_t::boolean;
+                        result.m_value = true;
+                        break;
+                    }
+
+                    case lexer::token_type::literal_false:
+                    {
+                        get_token();
+                        result.m_type = value_t::boolean;
+                        result.m_value = false;
+                        break;
+                    }
+
+                    case lexer::token_type::value_uint:
+                    {
+                        m_lexer.get_number_uint(result);
+                        get_token();
+                        break;
+                    }
+
+                    case lexer::token_type::value_int:
+                    {
+                        m_lexer.get_number_int(result);
+                        get_token();
+                        break;
+                    }
+
+                    case lexer::token_type::value_number:
+                    {
+                        m_lexer.get_number_float(result);
+                        get_token();
+                        break;
+                    }
+
+                    default:
+                    {
+                        // the last token was unexpected
+                        unexpect(last_token);
+                    }
                 }
 
-                case lexer::token_type::literal_null:
+                if (keep and callback and not callback(depth, parse_event_t::value, result))
                 {
-                    get_token();
-                    result.m_type = value_t::null;
-                    break;
+                    result = basic_json(value_t::discarded);
                 }
-
-                case lexer::token_type::value_string:
-                {
-                    const auto s = m_lexer.get_string();
-                    get_token();
-                    result = basic_json(s);
-                    break;
-                }
-
-                case lexer::token_type::literal_true:
-                {
-                    get_token();
-                    result.m_type = value_t::boolean;
-                    result.m_value = true;
-                    break;
-                }
-
-                case lexer::token_type::literal_false:
-                {
-                    get_token();
-                    result.m_type = value_t::boolean;
-                    result.m_value = false;
-                    break;
-                }
-
-                case lexer::token_type::value_uint:
-                {
-                    m_lexer.get_number_uint(result);
-                    get_token();
-                    break;
-                }
-
-                case lexer::token_type::value_int:
-                {
-                    m_lexer.get_number_int(result);
-                    get_token();
-                    break;
-                }
-
-                case lexer::token_type::value_number:
-                {
-                    m_lexer.get_number_float(result);
-                    get_token();
-                    break;
-                }
-
-                default:
-                {
-                    // the last token was unexpected
-                    unexpect(last_token);
-                }
+                return result;
             }
 
-            if (keep and callback and not callback(depth, parse_event_t::value, result))
+            /// get next token from lexer
+            typename lexer::token_type get_token() noexcept
             {
-                result = basic_json(value_t::discarded);
+                last_token = m_lexer.scan();
+                return last_token;
             }
-            return result;
-        }
 
-        /// get next token from lexer
-        typename lexer::token_type get_token() noexcept
-        {
-            last_token = m_lexer.scan();
-            return last_token;
-        }
-
-        void expect(typename lexer::token_type t) const
-        {
-            if (t != last_token)
+            void expect(typename lexer::token_type t) const
             {
-                std::string error_msg = "parse error - unexpected ";
-                error_msg += (last_token == lexer::token_type::parse_error ? ("'" +  m_lexer.get_token_string() +
-                              "'") :
-                              lexer::token_type_name(last_token));
-                error_msg += "; expected " + lexer::token_type_name(t);
-                throw std::invalid_argument(error_msg);
+                if (t != last_token)
+                {
+                    std::string error_msg = "parse error - unexpected ";
+                    error_msg += (last_token == lexer::token_type::parse_error ? ("'" +  m_lexer.get_token_string() +
+                                  "'") :
+                                  lexer::token_type_name(last_token));
+                    error_msg += "; expected " + lexer::token_type_name(t);
+                    throw std::invalid_argument(error_msg);
+                }
             }
-        }
 
-        void unexpect(typename lexer::token_type t) const
-        {
-            if (t == last_token)
+            void unexpect(typename lexer::token_type t) const
             {
-                std::string error_msg = "parse error - unexpected ";
-                error_msg += (last_token == lexer::token_type::parse_error ? ("'" +  m_lexer.get_token_string() +
-                              "'") :
-                              lexer::token_type_name(last_token));
-                throw std::invalid_argument(error_msg);
+                if (t == last_token)
+                {
+                    std::string error_msg = "parse error - unexpected ";
+                    error_msg += (last_token == lexer::token_type::parse_error ? ("'" +  m_lexer.get_token_string() +
+                                  "'") :
+                                  lexer::token_type_name(last_token));
+                    throw std::invalid_argument(error_msg);
+                }
             }
-        }
 
-      private:
-        /// current level of recursion
-        int depth = 0;
-        /// callback function
-        parser_callback_t callback;
-        /// the type of the last read token
-        typename lexer::token_type last_token = lexer::token_type::uninitialized;
-        /// the lexer
-        lexer m_lexer;
-    };
-
-  public:
-    /*!
-    @brief JSON Pointer
-
-    A JSON pointer defines a string syntax for identifying a specific value
-    within a JSON document. It can be used with functions `at` and
-    `operator[]`. Furthermore, JSON pointers are the base for JSON patches.
-
-    @sa [RFC 6901](https://tools.ietf.org/html/rfc6901)
-
-    @since version 2.0.0
-    */
-    class json_pointer
-    {
-        /// allow basic_json to access private members
-        friend class basic_json;
+          private:
+            /// current level of recursion
+            int depth = 0;
+            /// callback function
+            parser_callback_t callback;
+            /// the type of the last read token
+            typename lexer::token_type last_token = lexer::token_type::uninitialized;
+            /// the lexer
+            lexer m_lexer;
+        };
 
       public:
         /*!
-        @brief create JSON pointer
+        @brief JSON Pointer
 
-        Create a JSON pointer according to the syntax described in
-        [Section 3 of RFC6901](https://tools.ietf.org/html/rfc6901#section-3).
+        A JSON pointer defines a string syntax for identifying a specific value
+        within a JSON document. It can be used with functions `at` and
+        `operator[]`. Furthermore, JSON pointers are the base for JSON patches.
 
-        @param[in] s  string representing the JSON pointer; if omitted, the
-                      empty string is assumed which references the whole JSON
-                      value
-
-        @throw std::domain_error if reference token is nonempty and does not
-        begin with a slash (`/`); example: `"JSON pointer must be empty or
-        begin with /"`
-        @throw std::domain_error if a tilde (`~`) is not followed by `0`
-        (representing `~`) or `1` (representing `/`); example: `"escape error:
-        ~ must be followed with 0 or 1"`
-
-        @liveexample{The example shows the construction several valid JSON
-        pointers as well as the exceptional behavior.,json_pointer}
+        @sa [RFC 6901](https://tools.ietf.org/html/rfc6901)
 
         @since version 2.0.0
         */
-        explicit json_pointer(const std::string& s = "")
-            : reference_tokens(split(s))
-        {}
-
-        /*!
-        @brief return a string representation of the JSON pointer
-
-        @invariant For each JSON pointer `ptr`, it holds:
-        @code {.cpp}
-        ptr == json_pointer(ptr.to_string());
-        @endcode
-
-        @return a string representation of the JSON pointer
-
-        @liveexample{The example shows the result of `to_string`.,
-        json_pointer__to_string}
-
-        @since version 2.0.0
-        */
-        std::string to_string() const noexcept
+        class json_pointer
         {
-            return std::accumulate(reference_tokens.begin(),
-                                   reference_tokens.end(), std::string{},
-                                   [](const std::string & a, const std::string & b)
+            /// allow basic_json to access private members
+            friend class basic_json;
+
+          public:
+            /*!
+            @brief create JSON pointer
+
+            Create a JSON pointer according to the syntax described in
+            [Section 3 of RFC6901](https://tools.ietf.org/html/rfc6901#section-3).
+
+            @param[in] s  string representing the JSON pointer; if omitted, the
+                          empty string is assumed which references the whole JSON
+                          value
+
+            @throw std::domain_error if reference token is nonempty and does not
+            begin with a slash (`/`); example: `"JSON pointer must be empty or
+            begin with /"`
+            @throw std::domain_error if a tilde (`~`) is not followed by `0`
+            (representing `~`) or `1` (representing `/`); example: `"escape error:
+            ~ must be followed with 0 or 1"`
+
+            @liveexample{The example shows the construction several valid JSON
+            pointers as well as the exceptional behavior.,json_pointer}
+
+            @since version 2.0.0
+            */
+            explicit json_pointer(const std::string& s = "")
+                : reference_tokens(split(s))
+            {}
+
+            /*!
+            @brief return a string representation of the JSON pointer
+
+            @invariant For each JSON pointer `ptr`, it holds:
+            @code {.cpp}
+            ptr == json_pointer(ptr.to_string());
+            @endcode
+
+            @return a string representation of the JSON pointer
+
+            @liveexample{The example shows the result of `to_string`.,
+            json_pointer__to_string}
+
+            @since version 2.0.0
+            */
+            std::string to_string() const noexcept
             {
-                return a + "/" + escape(b);
-            });
-        }
-
-        /// @copydoc to_string()
-        operator std::string() const
-        {
-            return to_string();
-        }
-
-      private:
-        /// remove and return last reference pointer
-        std::string pop_back()
-        {
-            if (is_root())
-            {
-                throw std::domain_error("JSON pointer has no parent");
-            }
-
-            auto last = reference_tokens.back();
-            reference_tokens.pop_back();
-            return last;
-        }
-
-        /// return whether pointer points to the root document
-        bool is_root() const
-        {
-            return reference_tokens.empty();
-        }
-
-        json_pointer top() const
-        {
-            if (is_root())
-            {
-                throw std::domain_error("JSON pointer has no parent");
-            }
-
-            json_pointer result = *this;
-            result.reference_tokens = {reference_tokens[0]};
-            return result;
-        }
-
-        /*!
-        @brief create and return a reference to the pointed to value
-        */
-        reference get_and_create(reference j) const
-        {
-            pointer result = &j;
-
-            // in case no reference tokens exist, return a reference to the
-            // JSON value j which will be overwritten by a primitive value
-            for (const auto& reference_token : reference_tokens)
-            {
-                switch (result->m_type)
+                return std::accumulate(reference_tokens.begin(),
+                                       reference_tokens.end(), std::string{},
+                                       [](const std::string & a, const std::string & b)
                 {
-                    case value_t::null:
+                    return a + "/" + escape(b);
+                });
+            }
+
+            /// @copydoc to_string()
+            operator std::string() const
+            {
+                return to_string();
+            }
+
+          private:
+            /// remove and return last reference pointer
+            std::string pop_back()
+            {
+                if (is_root())
+                {
+                    throw std::domain_error("JSON pointer has no parent");
+                }
+
+                auto last = reference_tokens.back();
+                reference_tokens.pop_back();
+                return last;
+            }
+
+            /// return whether pointer points to the root document
+            bool is_root() const
+            {
+                return reference_tokens.empty();
+            }
+
+            json_pointer top() const
+            {
+                if (is_root())
+                {
+                    throw std::domain_error("JSON pointer has no parent");
+                }
+
+                json_pointer result = *this;
+                result.reference_tokens = {reference_tokens[0]};
+                return result;
+            }
+
+            /*!
+            @brief create and return a reference to the pointed to value
+            */
+            reference get_and_create(reference j) const
+            {
+                pointer result = &j;
+
+                // in case no reference tokens exist, return a reference to the
+                // JSON value j which will be overwritten by a primitive value
+                for (const auto& reference_token : reference_tokens)
+                {
+                    switch (result->m_type)
                     {
-                        if (reference_token == "0")
+                        case value_t::null:
                         {
-                            // start a new array if reference token is 0
-                            result = &result->operator[](0);
+                            if (reference_token == "0")
+                            {
+                                // start a new array if reference token is 0
+                                result = &result->operator[](0);
+                            }
+                            else
+                            {
+                                // start a new object otherwise
+                                result = &result->operator[](reference_token);
+                            }
+                            break;
+                        }
+
+                        case value_t::object:
+                        {
+                            // create an entry in the object
+                            result = &result->operator[](reference_token);
+                            break;
+                        }
+
+                        case value_t::array:
+                        {
+                            // create an entry in the array
+                            result = &result->operator[](static_cast<size_type>(std::stoi(reference_token)));
+                            break;
+                        }
+
+                        /*
+                        The following code is only reached if there exists a
+                        reference token _and_ the current value is primitive. In
+                        this case, we have an error situation, because primitive
+                        values may only occur as single value; that is, with an
+                        empty list of reference tokens.
+                        */
+                        default:
+                        {
+                            throw std::domain_error("invalid value to unflatten");
+                        }
+                    }
+                }
+
+                return *result;
+            }
+
+            /*!
+            @brief return a reference to the pointed to value
+
+            @param[in] ptr  a JSON value
+
+            @return reference to the JSON value pointed to by the JSON pointer
+
+            @complexity Linear in the length of the JSON pointer.
+
+            @throw std::out_of_range      if the JSON pointer can not be resolved
+            @throw std::domain_error      if an array index begins with '0'
+            @throw std::invalid_argument  if an array index was not a number
+            */
+            reference get_unchecked(pointer ptr) const
+            {
+                for (const auto& reference_token : reference_tokens)
+                {
+                    switch (ptr->m_type)
+                    {
+                        case value_t::object:
+                        {
+                            // use unchecked object access
+                            ptr = &ptr->operator[](reference_token);
+                            break;
+                        }
+
+                        case value_t::array:
+                        {
+                            // error condition (cf. RFC 6901, Sect. 4)
+                            if (reference_token.size() > 1 and reference_token[0] == '0')
+                            {
+                                throw std::domain_error("array index must not begin with '0'");
+                            }
+
+                            if (reference_token == "-")
+                            {
+                                // explicityly treat "-" as index beyond the end
+                                ptr = &ptr->operator[](ptr->m_value.array->size());
+                            }
+                            else
+                            {
+                                // convert array index to number; unchecked access
+                                ptr = &ptr->operator[](static_cast<size_type>(std::stoi(reference_token)));
+                            }
+                            break;
+                        }
+
+                        default:
+                        {
+                            throw std::out_of_range("unresolved reference token '" + reference_token + "'");
+                        }
+                    }
+                }
+
+                return *ptr;
+            }
+
+            reference get_checked(pointer ptr) const
+            {
+                for (const auto& reference_token : reference_tokens)
+                {
+                    switch (ptr->m_type)
+                    {
+                        case value_t::object:
+                        {
+                            // note: at performs range check
+                            ptr = &ptr->at(reference_token);
+                            break;
+                        }
+
+                        case value_t::array:
+                        {
+                            if (reference_token == "-")
+                            {
+                                // "-" always fails the range check
+                                throw std::out_of_range("array index '-' (" +
+                                                        std::to_string(ptr->m_value.array->size()) +
+                                                        ") is out of range");
+                            }
+
+                            // error condition (cf. RFC 6901, Sect. 4)
+                            if (reference_token.size() > 1 and reference_token[0] == '0')
+                            {
+                                throw std::domain_error("array index must not begin with '0'");
+                            }
+
+                            // note: at performs range check
+                            ptr = &ptr->at(static_cast<size_type>(std::stoi(reference_token)));
+                            break;
+                        }
+
+                        default:
+                        {
+                            throw std::out_of_range("unresolved reference token '" + reference_token + "'");
+                        }
+                    }
+                }
+
+                return *ptr;
+            }
+
+            /*!
+            @brief return a const reference to the pointed to value
+
+            @param[in] ptr  a JSON value
+
+            @return const reference to the JSON value pointed to by the JSON
+                    pointer
+            */
+            const_reference get_unchecked(const_pointer ptr) const
+            {
+                for (const auto& reference_token : reference_tokens)
+                {
+                    switch (ptr->m_type)
+                    {
+                        case value_t::object:
+                        {
+                            // use unchecked object access
+                            ptr = &ptr->operator[](reference_token);
+                            break;
+                        }
+
+                        case value_t::array:
+                        {
+                            if (reference_token == "-")
+                            {
+                                // "-" cannot be used for const access
+                                throw std::out_of_range("array index '-' (" +
+                                                        std::to_string(ptr->m_value.array->size()) +
+                                                        ") is out of range");
+                            }
+
+                            // error condition (cf. RFC 6901, Sect. 4)
+                            if (reference_token.size() > 1 and reference_token[0] == '0')
+                            {
+                                throw std::domain_error("array index must not begin with '0'");
+                            }
+
+                            // use unchecked array access
+                            ptr = &ptr->operator[](static_cast<size_type>(std::stoi(reference_token)));
+                            break;
+                        }
+
+                        default:
+                        {
+                            throw std::out_of_range("unresolved reference token '" + reference_token + "'");
+                        }
+                    }
+                }
+
+                return *ptr;
+            }
+
+            const_reference get_checked(const_pointer ptr) const
+            {
+                for (const auto& reference_token : reference_tokens)
+                {
+                    switch (ptr->m_type)
+                    {
+                        case value_t::object:
+                        {
+                            // note: at performs range check
+                            ptr = &ptr->at(reference_token);
+                            break;
+                        }
+
+                        case value_t::array:
+                        {
+                            if (reference_token == "-")
+                            {
+                                // "-" always fails the range check
+                                throw std::out_of_range("array index '-' (" +
+                                                        std::to_string(ptr->m_value.array->size()) +
+                                                        ") is out of range");
+                            }
+
+                            // error condition (cf. RFC 6901, Sect. 4)
+                            if (reference_token.size() > 1 and reference_token[0] == '0')
+                            {
+                                throw std::domain_error("array index must not begin with '0'");
+                            }
+
+                            // note: at performs range check
+                            ptr = &ptr->at(static_cast<size_type>(std::stoi(reference_token)));
+                            break;
+                        }
+
+                        default:
+                        {
+                            throw std::out_of_range("unresolved reference token '" + reference_token + "'");
+                        }
+                    }
+                }
+
+                return *ptr;
+            }
+
+            /// split the string input to reference tokens
+            static std::vector<std::string> split(std::string reference_string)
+            {
+                std::vector<std::string> result;
+
+                // special case: empty reference string -> no reference tokens
+                if (reference_string.empty())
+                {
+                    return result;
+                }
+
+                // check if nonempty reference string begins with slash
+                if (reference_string[0] != '/')
+                {
+                    throw std::domain_error("JSON pointer must be empty or begin with '/'");
+                }
+
+                // extract the reference tokens:
+                // - slash: position of the last read slash (or end of string)
+                // - start: position after the previous slash
+                for (
+                    // search for the first slash after the first character
+                    size_t slash = reference_string.find_first_of("/", 1),
+                    // set the beginning of the first reference token
+                    start = 1;
+                    // we can stop if start == string::npos+1 = 0
+                    start != 0;
+                    // set the beginning of the next reference token
+                    // (will eventually be 0 if slash == std::string::npos)
+                    start = slash + 1,
+                    // find next slash
+                    slash = reference_string.find_first_of("/", start))
+                {
+                    // use the text between the beginning of the reference token
+                    // (start) and the last slash (slash).
+                    auto reference_token = reference_string.substr(start, slash - start);
+
+                    // check reference tokens are properly escaped
+                    for (size_t pos = reference_token.find_first_of("~");
+                            pos != std::string::npos;
+                            pos = reference_token.find_first_of("~", pos + 1))
+                    {
+                        assert(reference_token[pos] == '~');
+
+                        // ~ must be followed by 0 or 1
+                        if (pos == reference_token.size() - 1 or
+                                (reference_token[pos + 1] != '0' and
+                                 reference_token[pos + 1] != '1'))
+                        {
+                            throw std::domain_error("escape error: '~' must be followed with '0' or '1'");
+                        }
+                    }
+
+                    // finally, store the reference token
+                    unescape(reference_token);
+                    result.push_back(reference_token);
+                }
+
+                return result;
+            }
+
+          private:
+            /*!
+            @brief replace all occurrences of a substring by another string
+
+            @param[in,out] s  the string to manipulate
+            @param[in]     f  the substring to replace with @a t
+            @param[out]    t  the string to replace @a f
+
+            @return The string @a s where all occurrences of @a f are replaced
+                    with @a t.
+
+            @pre The search string @a f must not be empty.
+
+            @since version 2.0.0
+            */
+            static void replace_substring(std::string& s,
+                                          const std::string& f,
+                                          const std::string& t)
+            {
+                assert(not f.empty());
+
+                for (
+                    size_t pos = s.find(f);         // find first occurrence of f
+                    pos != std::string::npos;       // make sure f was found
+                    s.replace(pos, f.size(), t),    // replace with t
+                    pos = s.find(f, pos + t.size()) // find next occurrence of f
+                );
+            }
+
+            /// escape tilde and slash
+            static std::string escape(std::string s)
+            {
+                // escape "~"" to "~0" and "/" to "~1"
+                replace_substring(s, "~", "~0");
+                replace_substring(s, "/", "~1");
+                return s;
+            }
+
+            /// unescape tilde and slash
+            static void unescape(std::string& s)
+            {
+                // first transform any occurrence of the sequence '~1' to '/'
+                replace_substring(s, "~1", "/");
+                // then transform any occurrence of the sequence '~0' to '~'
+                replace_substring(s, "~0", "~");
+            }
+
+            /*!
+            @param[in] reference_string  the reference string to the current value
+            @param[in] value             the value to consider
+            @param[in,out] result        the result object to insert values to
+
+            @note Empty objects or arrays are flattened to `null`.
+            */
+            static void flatten(const std::string& reference_string,
+                                const basic_json& value,
+                                basic_json& result)
+            {
+                switch (value.m_type)
+                {
+                    case value_t::array:
+                    {
+                        if (value.m_value.array->empty())
+                        {
+                            // flatten empty array as null
+                            result[reference_string] = nullptr;
                         }
                         else
                         {
-                            // start a new object otherwise
-                            result = &result->operator[](reference_token);
+                            // iterate array and use index as reference string
+                            for (size_t i = 0; i < value.m_value.array->size(); ++i)
+                            {
+                                flatten(reference_string + "/" + std::to_string(i),
+                                        value.m_value.array->operator[](i), result);
+                            }
                         }
                         break;
                     }
 
                     case value_t::object:
                     {
-                        // create an entry in the object
-                        result = &result->operator[](reference_token);
+                        if (value.m_value.object->empty())
+                        {
+                            // flatten empty object as null
+                            result[reference_string] = nullptr;
+                        }
+                        else
+                        {
+                            // iterate object and use keys as reference string
+                            for (const auto& element : *value.m_value.object)
+                            {
+                                flatten(reference_string + "/" + escape(element.first),
+                                        element.second, result);
+                            }
+                        }
                         break;
                     }
 
-                    case value_t::array:
-                    {
-                        // create an entry in the array
-                        result = &result->operator[](static_cast<size_type>(std::stoi(reference_token)));
-                        break;
-                    }
-
-                    /*
-                    The following code is only reached if there exists a
-                    reference token _and_ the current value is primitive. In
-                    this case, we have an error situation, because primitive
-                    values may only occur as single value; that is, with an
-                    empty list of reference tokens.
-                    */
                     default:
                     {
-                        throw std::domain_error("invalid value to unflatten");
+                        // add primitive value with its reference string
+                        result[reference_string] = value;
+                        break;
                     }
                 }
             }
 
-            return *result;
-        }
+            /*!
+            @param[in] value  flattened JSON
+
+            @return unflattened JSON
+            */
+            static basic_json unflatten(const basic_json& value)
+            {
+                if (not value.is_object())
+                {
+                    throw std::domain_error("only objects can be unflattened");
+                }
+
+                basic_json result;
+
+                // iterate the JSON object values
+                for (const auto& element : *value.m_value.object)
+                {
+                    if (not element.second.is_primitive())
+                    {
+                        throw std::domain_error("values in object must be primitive");
+                    }
+
+                    // assign value to reference pointed to by JSON pointer; Note
+                    // that if the JSON pointer is "" (i.e., points to the whole
+                    // value), function get_and_create returns a reference to
+                    // result itself. An assignment will then create a primitive
+                    // value.
+                    json_pointer(element.first).get_and_create(result) = element.second;
+                }
+
+                return result;
+            }
+
+          private:
+            /// the reference tokens
+            std::vector<std::string> reference_tokens {};
+        };
+
+        //////////////////////////
+        // JSON Pointer support //
+        //////////////////////////
+
+        /// @name JSON Pointer functions
+        /// @{
 
         /*!
-        @brief return a reference to the pointed to value
+        @brief access specified element via JSON Pointer
 
-        @param[in] ptr  a JSON value
+        Uses a JSON pointer to retrieve a reference to the respective JSON value.
+        No bound checking is performed. Similar to @ref operator[](const typename
+        object_t::key_type&), `null` values are created in arrays and objects if
+        necessary.
 
-        @return reference to the JSON value pointed to by the JSON pointer
+        In particular:
+        - If the JSON pointer points to an object key that does not exist, it
+          is created an filled with a `null` value before a reference to it
+          is returned.
+        - If the JSON pointer points to an array index that does not exist, it
+          is created an filled with a `null` value before a reference to it
+          is returned. All indices between the current maximum and the given
+          index are also filled with `null`.
+        - The special value `-` is treated as a synonym for the index past the
+          end.
 
-        @complexity Linear in the length of the JSON pointer.
+        @param[in] ptr  a JSON pointer
+
+        @return reference to the element pointed to by @a ptr
+
+        @complexity Constant.
 
         @throw std::out_of_range      if the JSON pointer can not be resolved
         @throw std::domain_error      if an array index begins with '0'
         @throw std::invalid_argument  if an array index was not a number
+
+        @liveexample{The behavior is shown in the example.,operatorjson_pointer}
+
+        @since version 2.0.0
         */
-        reference get_unchecked(pointer ptr) const
+        reference operator[](const json_pointer& ptr)
         {
-            for (const auto& reference_token : reference_tokens)
-            {
-                switch (ptr->m_type)
-                {
-                    case value_t::object:
-                    {
-                        // use unchecked object access
-                        ptr = &ptr->operator[](reference_token);
-                        break;
-                    }
-
-                    case value_t::array:
-                    {
-                        // error condition (cf. RFC 6901, Sect. 4)
-                        if (reference_token.size() > 1 and reference_token[0] == '0')
-                        {
-                            throw std::domain_error("array index must not begin with '0'");
-                        }
-
-                        if (reference_token == "-")
-                        {
-                            // explicityly treat "-" as index beyond the end
-                            ptr = &ptr->operator[](ptr->m_value.array->size());
-                        }
-                        else
-                        {
-                            // convert array index to number; unchecked access
-                            ptr = &ptr->operator[](static_cast<size_type>(std::stoi(reference_token)));
-                        }
-                        break;
-                    }
-
-                    default:
-                    {
-                        throw std::out_of_range("unresolved reference token '" + reference_token + "'");
-                    }
-                }
-            }
-
-            return *ptr;
-        }
-
-        reference get_checked(pointer ptr) const
-        {
-            for (const auto& reference_token : reference_tokens)
-            {
-                switch (ptr->m_type)
-                {
-                    case value_t::object:
-                    {
-                        // note: at performs range check
-                        ptr = &ptr->at(reference_token);
-                        break;
-                    }
-
-                    case value_t::array:
-                    {
-                        if (reference_token == "-")
-                        {
-                            // "-" always fails the range check
-                            throw std::out_of_range("array index '-' (" +
-                                                    std::to_string(ptr->m_value.array->size()) +
-                                                    ") is out of range");
-                        }
-
-                        // error condition (cf. RFC 6901, Sect. 4)
-                        if (reference_token.size() > 1 and reference_token[0] == '0')
-                        {
-                            throw std::domain_error("array index must not begin with '0'");
-                        }
-
-                        // note: at performs range check
-                        ptr = &ptr->at(static_cast<size_type>(std::stoi(reference_token)));
-                        break;
-                    }
-
-                    default:
-                    {
-                        throw std::out_of_range("unresolved reference token '" + reference_token + "'");
-                    }
-                }
-            }
-
-            return *ptr;
+            return ptr.get_unchecked(this);
         }
 
         /*!
-        @brief return a const reference to the pointed to value
+        @brief access specified element via JSON Pointer
 
-        @param[in] ptr  a JSON value
+        Uses a JSON pointer to retrieve a reference to the respective JSON value.
+        No bound checking is performed. The function does not change the JSON
+        value; no `null` values are created. In particular, the the special value
+        `-` yields an exception.
 
-        @return const reference to the JSON value pointed to by the JSON
-                pointer
+        @param[in] ptr  JSON pointer to the desired element
+
+        @return const reference to the element pointed to by @a ptr
+
+        @complexity Constant.
+
+        @throw std::out_of_range      if the JSON pointer can not be resolved
+        @throw std::domain_error      if an array index begins with '0'
+        @throw std::invalid_argument  if an array index was not a number
+
+        @liveexample{The behavior is shown in the example.,operatorjson_pointer_const}
+
+        @since version 2.0.0
         */
-        const_reference get_unchecked(const_pointer ptr) const
+        const_reference operator[](const json_pointer& ptr) const
         {
-            for (const auto& reference_token : reference_tokens)
+            return ptr.get_unchecked(this);
+        }
+
+        /*!
+        @brief access specified element via JSON Pointer
+
+        Returns a reference to the element at with specified JSON pointer @a ptr,
+        with bounds checking.
+
+        @param[in] ptr  JSON pointer to the desired element
+
+        @return reference to the element pointed to by @a ptr
+
+        @complexity Constant.
+
+        @throw std::out_of_range      if the JSON pointer can not be resolved
+        @throw std::domain_error      if an array index begins with '0'
+        @throw std::invalid_argument  if an array index was not a number
+
+        @liveexample{The behavior is shown in the example.,at_json_pointer}
+
+        @since version 2.0.0
+        */
+        reference at(const json_pointer& ptr)
+        {
+            return ptr.get_checked(this);
+        }
+
+        /*!
+        @brief access specified element via JSON Pointer
+
+        Returns a const reference to the element at with specified JSON pointer @a
+        ptr, with bounds checking.
+
+        @param[in] ptr  JSON pointer to the desired element
+
+        @return reference to the element pointed to by @a ptr
+
+        @complexity Constant.
+
+        @throw std::out_of_range      if the JSON pointer can not be resolved
+        @throw std::domain_error      if an array index begins with '0'
+        @throw std::invalid_argument  if an array index was not a number
+
+        @liveexample{The behavior is shown in the example.,at_json_pointer_const}
+
+        @since version 2.0.0
+        */
+        const_reference at(const json_pointer& ptr) const
+        {
+            return ptr.get_checked(this);
+        }
+
+        /*!
+        @brief return flattened JSON value
+
+        The function creates a JSON object whose keys are JSON pointers (see [RFC
+        6901](https://tools.ietf.org/html/rfc6901)) and whose values are all
+        primitive. The original JSON value can be restored using the @ref
+        unflatten() function.
+
+        @return an object that maps JSON pointers to primitve values
+
+        @note Empty objects and arrays are flattened to `null` and will not be
+              reconstructed correctly by the @ref unflatten() function.
+
+        @complexity Linear in the size the JSON value.
+
+        @liveexample{The following code shows how a JSON object is flattened to an
+        object whose keys consist of JSON pointers.,flatten}
+
+        @sa @ref unflatten() for the reverse function
+
+        @since version 2.0.0
+        */
+        basic_json flatten() const
+        {
+            basic_json result(value_t::object);
+            json_pointer::flatten("", *this, result);
+            return result;
+        }
+
+        /*!
+        @brief unflatten a previously flattened JSON value
+
+        The function restores the arbitrary nesting of a JSON value that has been
+        flattened before using the @ref flatten() function. The JSON value must
+        meet certain constraints:
+        1. The value must be an object.
+        2. The keys must be JSON pointers (see
+           [RFC 6901](https://tools.ietf.org/html/rfc6901))
+        3. The mapped values must be primitive JSON types.
+
+        @return the original JSON from a flattened version
+
+        @note Empty objects and arrays are flattened by @ref flatten() to `null`
+              values and can not unflattened to their original type. Apart from
+              this example, for a JSON value `j`, the following is always true:
+              `j == j.flatten().unflatten()`.
+
+        @complexity Linear in the size the JSON value.
+
+        @liveexample{The following code shows how a flattened JSON object is
+        unflattened into the original nested JSON object.,unflatten}
+
+        @sa @ref flatten() for the reverse function
+
+        @since version 2.0.0
+        */
+        basic_json unflatten() const
+        {
+            return json_pointer::unflatten(*this);
+        }
+
+        /// @}
+
+        //////////////////////////
+        // JSON Patch functions //
+        //////////////////////////
+
+        /// @name JSON Patch functions
+        /// @{
+
+        /*!
+        @brief applies a JSON patch
+
+        [JSON Patch](http://jsonpatch.com) defines a JSON document structure for
+        expressing a sequence of operations to apply to a JSON) document. With
+        this funcion, a JSON Patch is applied to the current JSON value by
+        executing all operations from the patch.
+
+        @param[in] json_patch  JSON patch document
+        @return patched document
+
+        @note The application of a patch is atomic: Either all operations succeed
+              and the patched document is returned or an exception is thrown. In
+              any case, the original value is not changed: the patch is applied
+              to a copy of the value.
+
+        @throw std::out_of_range if a JSON pointer inside the patch could not
+        be resolved successfully in the current JSON value; example: `"key baz
+        not found"`
+        @throw invalid_argument if the JSON patch is malformed (e.g., mandatory
+        attributes are missing); example: `"operation add must have member path"`
+
+        @complexity Linear in the size of the JSON value and the length of the
+        JSON patch. As usually only a fraction of the JSON value is affected by
+        the patch, the complexity can usually be neglected.
+
+        @liveexample{The following code shows how a JSON patch is applied to a
+        value.,patch}
+
+        @sa @ref diff -- create a JSON patch by comparing two JSON values
+
+        @sa [RFC 6902 (JSON Patch)](https://tools.ietf.org/html/rfc6902)
+        @sa [RFC 6901 (JSON Pointer)](https://tools.ietf.org/html/rfc6901)
+
+        @since version 2.0.0
+        */
+        basic_json patch(const basic_json& json_patch) const
+        {
+            // make a working copy to apply the patch to
+            basic_json result = *this;
+
+            // the valid JSON Patch operations
+            enum class patch_operations {add, remove, replace, move, copy, test, invalid};
+
+            const auto get_op = [](const std::string op)
             {
-                switch (ptr->m_type)
+                if (op == "add")
                 {
-                    case value_t::object:
+                    return patch_operations::add;
+                }
+                if (op == "remove")
+                {
+                    return patch_operations::remove;
+                }
+                if (op == "replace")
+                {
+                    return patch_operations::replace;
+                }
+                if (op == "move")
+                {
+                    return patch_operations::move;
+                }
+                if (op == "copy")
+                {
+                    return patch_operations::copy;
+                }
+                if (op == "test")
+                {
+                    return patch_operations::test;
+                }
+
+                return patch_operations::invalid;
+            };
+
+            // wrapper for "add" operation; add value at ptr
+            const auto operation_add = [&result](json_pointer & ptr, basic_json val)
+            {
+                // adding to the root of the target document means replacing it
+                if (ptr.is_root())
+                {
+                    result = val;
+                }
+                else
+                {
+                    // make sure the top element of the pointer exists
+                    json_pointer top_pointer = ptr.top();
+                    if (top_pointer != ptr)
                     {
-                        // use unchecked object access
-                        ptr = &ptr->operator[](reference_token);
+                        basic_json& x = result.at(top_pointer);
+                    }
+
+                    // get reference to parent of JSON pointer ptr
+                    const auto last_path = ptr.pop_back();
+                    basic_json& parent = result[ptr];
+
+                    switch (parent.m_type)
+                    {
+                        case value_t::null:
+                        case value_t::object:
+                        {
+                            // use operator[] to add value
+                            parent[last_path] = val;
+                            break;
+                        }
+
+                        case value_t::array:
+                        {
+                            if (last_path == "-")
+                            {
+                                // special case: append to back
+                                parent.push_back(val);
+                            }
+                            else
+                            {
+                                const auto idx = std::stoi(last_path);
+                                if (static_cast<size_type>(idx) > parent.size())
+                                {
+                                    // avoid undefined behavior
+                                    throw std::out_of_range("array index " + std::to_string(idx) + " is out of range");
+                                }
+                                else
+                                {
+                                    // default case: insert add offset
+                                    parent.insert(parent.begin() + static_cast<difference_type>(idx), val);
+                                }
+                            }
+                            break;
+                        }
+
+                        default:
+                        {
+                            // if there exists a parent it cannot be primitive
+                            assert(false);  // LCOV_EXCL_LINE
+                        }
+                    }
+                }
+            };
+
+            // wrapper for "remove" operation; remove value at ptr
+            const auto operation_remove = [&result](json_pointer & ptr)
+            {
+                // get reference to parent of JSON pointer ptr
+                const auto last_path = ptr.pop_back();
+                basic_json& parent = result.at(ptr);
+
+                // remove child
+                if (parent.is_object())
+                {
+                    // perform range check
+                    auto it = parent.find(last_path);
+                    if (it != parent.end())
+                    {
+                        parent.erase(it);
+                    }
+                    else
+                    {
+                        throw std::out_of_range("key '" + last_path + "' not found");
+                    }
+                }
+                else if (parent.is_array())
+                {
+                    // note erase performs range check
+                    parent.erase(static_cast<size_type>(std::stoi(last_path)));
+                }
+            };
+
+            // type check
+            if (not json_patch.is_array())
+            {
+                // a JSON patch must be an array of objects
+                throw std::invalid_argument("JSON patch must be an array of objects");
+            }
+
+            // iterate and apply th eoperations
+            for (const auto& val : json_patch)
+            {
+                // wrapper to get a value for an operation
+                const auto get_value = [&val](const std::string & op,
+                                              const std::string & member,
+                                              bool string_type) -> basic_json&
+                {
+                    // find value
+                    auto it = val.m_value.object->find(member);
+
+                    // context-sensitive error message
+                    const auto error_msg = (op == "op") ? "operation" : "operation '" + op + "'";
+
+                    // check if desired value is present
+                    if (it == val.m_value.object->end())
+                    {
+                        throw std::invalid_argument(error_msg + " must have member '" + member + "'");
+                    }
+
+                    // check if result is of type string
+                    if (string_type and not it->second.is_string())
+                    {
+                        throw std::invalid_argument(error_msg + " must have string member '" + member + "'");
+                    }
+
+                    // no error: return value
+                    return it->second;
+                };
+
+                // type check
+                if (not val.is_object())
+                {
+                    throw std::invalid_argument("JSON patch must be an array of objects");
+                }
+
+                // collect mandatory members
+                const std::string op = get_value("op", "op", true);
+                const std::string path = get_value(op, "path", true);
+                json_pointer ptr(path);
+
+                switch (get_op(op))
+                {
+                    case patch_operations::add:
+                    {
+                        operation_add(ptr, get_value("add", "value", false));
                         break;
                     }
 
-                    case value_t::array:
+                    case patch_operations::remove:
                     {
-                        if (reference_token == "-")
-                        {
-                            // "-" cannot be used for const access
-                            throw std::out_of_range("array index '-' (" +
-                                                    std::to_string(ptr->m_value.array->size()) +
-                                                    ") is out of range");
-                        }
-
-                        // error condition (cf. RFC 6901, Sect. 4)
-                        if (reference_token.size() > 1 and reference_token[0] == '0')
-                        {
-                            throw std::domain_error("array index must not begin with '0'");
-                        }
-
-                        // use unchecked array access
-                        ptr = &ptr->operator[](static_cast<size_type>(std::stoi(reference_token)));
+                        operation_remove(ptr);
                         break;
                     }
 
-                    default:
+                    case patch_operations::replace:
                     {
-                        throw std::out_of_range("unresolved reference token '" + reference_token + "'");
+                        // the "path" location must exist - use at()
+                        result.at(ptr) = get_value("replace", "value", false);
+                        break;
+                    }
+
+                    case patch_operations::move:
+                    {
+                        const std::string from_path = get_value("move", "from", true);
+                        json_pointer from_ptr(from_path);
+
+                        // the "from" location must exist - use at()
+                        basic_json v = result.at(from_ptr);
+
+                        // The move operation is functionally identical to a
+                        // "remove" operation on the "from" location, followed
+                        // immediately by an "add" operation at the target
+                        // location with the value that was just removed.
+                        operation_remove(from_ptr);
+                        operation_add(ptr, v);
+                        break;
+                    }
+
+                    case patch_operations::copy:
+                    {
+                        const std::string from_path = get_value("copy", "from", true);;
+                        const json_pointer from_ptr(from_path);
+
+                        // the "from" location must exist - use at()
+                        result[ptr] = result.at(from_ptr);
+                        break;
+                    }
+
+                    case patch_operations::test:
+                    {
+                        bool success = false;
+                        try
+                        {
+                            // check if "value" matches the one at "path"
+                            // the "path" location must exist - use at()
+                            success = (result.at(ptr) == get_value("test", "value", false));
+                        }
+                        catch (std::out_of_range&)
+                        {
+                            // ignore out of range errors: success remains false
+                        }
+
+                        // throw an exception if test fails
+                        if (not success)
+                        {
+                            throw std::domain_error("unsuccessful: " + val.dump());
+                        }
+
+                        break;
+                    }
+
+                    case patch_operations::invalid:
+                    {
+                        // op must be "add", "remove", "replace", "move", "copy", or
+                        // "test"
+                        throw std::invalid_argument("operation value '" + op + "' is invalid");
                     }
                 }
             }
 
-            return *ptr;
+            return result;
         }
 
-        const_reference get_checked(const_pointer ptr) const
+        /*!
+        @brief creates a diff as a JSON patch
+
+        Creates a [JSON Patch](http://jsonpatch.com) so that value @a source can
+        be changed into the value @a target by calling @ref patch function.
+
+        @invariant For two JSON values @a source and @a target, the following code
+        yields always `true`:
+        @code {.cpp}
+        source.patch(diff(source, target)) == target;
+        @endcode
+
+        @note Currently, only `remove`, `add`, and `replace` operations are
+              generated.
+
+        @param[in] source  JSON value to copare from
+        @param[in] target  JSON value to copare against
+        @param[in] path    helper value to create JSON pointers
+
+        @return a JSON patch to convert the @a source to @a target
+
+        @complexity Linear in the lengths of @a source and @a target.
+
+        @liveexample{The following code shows how a JSON patch is created as a
+        diff for two JSON values.,diff}
+
+        @sa @ref patch -- apply a JSON patch
+
+        @sa [RFC 6902 (JSON Patch)](https://tools.ietf.org/html/rfc6902)
+
+        @since version 2.0.0
+        */
+        static basic_json diff(const basic_json& source,
+                               const basic_json& target,
+                               std::string path = "")
         {
-            for (const auto& reference_token : reference_tokens)
-            {
-                switch (ptr->m_type)
-                {
-                    case value_t::object:
-                    {
-                        // note: at performs range check
-                        ptr = &ptr->at(reference_token);
-                        break;
-                    }
+            // the patch
+            basic_json result(value_t::array);
 
-                    case value_t::array:
-                    {
-                        if (reference_token == "-")
-                        {
-                            // "-" always fails the range check
-                            throw std::out_of_range("array index '-' (" +
-                                                    std::to_string(ptr->m_value.array->size()) +
-                                                    ") is out of range");
-                        }
-
-                        // error condition (cf. RFC 6901, Sect. 4)
-                        if (reference_token.size() > 1 and reference_token[0] == '0')
-                        {
-                            throw std::domain_error("array index must not begin with '0'");
-                        }
-
-                        // note: at performs range check
-                        ptr = &ptr->at(static_cast<size_type>(std::stoi(reference_token)));
-                        break;
-                    }
-
-                    default:
-                    {
-                        throw std::out_of_range("unresolved reference token '" + reference_token + "'");
-                    }
-                }
-            }
-
-            return *ptr;
-        }
-
-        /// split the string input to reference tokens
-        static std::vector<std::string> split(std::string reference_string)
-        {
-            std::vector<std::string> result;
-
-            // special case: empty reference string -> no reference tokens
-            if (reference_string.empty())
+            // if the values are the same, return empty patch
+            if (source == target)
             {
                 return result;
             }
 
-            // check if nonempty reference string begins with slash
-            if (reference_string[0] != '/')
+            if (source.type() != target.type())
             {
-                throw std::domain_error("JSON pointer must be empty or begin with '/'");
-            }
-
-            // extract the reference tokens:
-            // - slash: position of the last read slash (or end of string)
-            // - start: position after the previous slash
-            for (
-                // search for the first slash after the first character
-                size_t slash = reference_string.find_first_of("/", 1),
-                // set the beginning of the first reference token
-                start = 1;
-                // we can stop if start == string::npos+1 = 0
-                start != 0;
-                // set the beginning of the next reference token
-                // (will eventually be 0 if slash == std::string::npos)
-                start = slash + 1,
-                // find next slash
-                slash = reference_string.find_first_of("/", start))
-            {
-                // use the text between the beginning of the reference token
-                // (start) and the last slash (slash).
-                auto reference_token = reference_string.substr(start, slash - start);
-
-                // check reference tokens are properly escaped
-                for (size_t pos = reference_token.find_first_of("~");
-                        pos != std::string::npos;
-                        pos = reference_token.find_first_of("~", pos + 1))
+                // different types: replace value
+                result.push_back(
                 {
-                    assert(reference_token[pos] == '~');
-
-                    // ~ must be followed by 0 or 1
-                    if (pos == reference_token.size() - 1 or
-                            (reference_token[pos + 1] != '0' and
-                             reference_token[pos + 1] != '1'))
-                    {
-                        throw std::domain_error("escape error: '~' must be followed with '0' or '1'");
-                    }
-                }
-
-                // finally, store the reference token
-                unescape(reference_token);
-                result.push_back(reference_token);
-            }
-
-            return result;
-        }
-
-      private:
-        /*!
-        @brief replace all occurrences of a substring by another string
-
-        @param[in,out] s  the string to manipulate
-        @param[in]     f  the substring to replace with @a t
-        @param[out]    t  the string to replace @a f
-
-        @return The string @a s where all occurrences of @a f are replaced
-                with @a t.
-
-        @pre The search string @a f must not be empty.
-
-        @since version 2.0.0
-        */
-        static void replace_substring(std::string& s,
-                                      const std::string& f,
-                                      const std::string& t)
-        {
-            assert(not f.empty());
-
-            for (
-                size_t pos = s.find(f);         // find first occurrence of f
-                pos != std::string::npos;       // make sure f was found
-                s.replace(pos, f.size(), t),    // replace with t
-                pos = s.find(f, pos + t.size()) // find next occurrence of f
-            );
-        }
-
-        /// escape tilde and slash
-        static std::string escape(std::string s)
-        {
-            // escape "~"" to "~0" and "/" to "~1"
-            replace_substring(s, "~", "~0");
-            replace_substring(s, "/", "~1");
-            return s;
-        }
-
-        /// unescape tilde and slash
-        static void unescape(std::string& s)
-        {
-            // first transform any occurrence of the sequence '~1' to '/'
-            replace_substring(s, "~1", "/");
-            // then transform any occurrence of the sequence '~0' to '~'
-            replace_substring(s, "~0", "~");
-        }
-
-        /*!
-        @param[in] reference_string  the reference string to the current value
-        @param[in] value             the value to consider
-        @param[in,out] result        the result object to insert values to
-
-        @note Empty objects or arrays are flattened to `null`.
-        */
-        static void flatten(const std::string& reference_string,
-                            const basic_json& value,
-                            basic_json& result)
-        {
-            switch (value.m_type)
-            {
-                case value_t::array:
-                {
-                    if (value.m_value.array->empty())
-                    {
-                        // flatten empty array as null
-                        result[reference_string] = nullptr;
-                    }
-                    else
-                    {
-                        // iterate array and use index as reference string
-                        for (size_t i = 0; i < value.m_value.array->size(); ++i)
-                        {
-                            flatten(reference_string + "/" + std::to_string(i),
-                                    value.m_value.array->operator[](i), result);
-                        }
-                    }
-                    break;
-                }
-
-                case value_t::object:
-                {
-                    if (value.m_value.object->empty())
-                    {
-                        // flatten empty object as null
-                        result[reference_string] = nullptr;
-                    }
-                    else
-                    {
-                        // iterate object and use keys as reference string
-                        for (const auto& element : *value.m_value.object)
-                        {
-                            flatten(reference_string + "/" + escape(element.first),
-                                    element.second, result);
-                        }
-                    }
-                    break;
-                }
-
-                default:
-                {
-                    // add primitive value with its reference string
-                    result[reference_string] = value;
-                    break;
-                }
-            }
-        }
-
-        /*!
-        @param[in] value  flattened JSON
-
-        @return unflattened JSON
-        */
-        static basic_json unflatten(const basic_json& value)
-        {
-            if (not value.is_object())
-            {
-                throw std::domain_error("only objects can be unflattened");
-            }
-
-            basic_json result;
-
-            // iterate the JSON object values
-            for (const auto& element : *value.m_value.object)
-            {
-                if (not element.second.is_primitive())
-                {
-                    throw std::domain_error("values in object must be primitive");
-                }
-
-                // assign value to reference pointed to by JSON pointer; Note
-                // that if the JSON pointer is "" (i.e., points to the whole
-                // value), function get_and_create returns a reference to
-                // result itself. An assignment will then create a primitive
-                // value.
-                json_pointer(element.first).get_and_create(result) = element.second;
-            }
-
-            return result;
-        }
-
-      private:
-        /// the reference tokens
-        std::vector<std::string> reference_tokens {};
-    };
-
-    //////////////////////////
-    // JSON Pointer support //
-    //////////////////////////
-
-    /// @name JSON Pointer functions
-    /// @{
-
-    /*!
-    @brief access specified element via JSON Pointer
-
-    Uses a JSON pointer to retrieve a reference to the respective JSON value.
-    No bound checking is performed. Similar to @ref operator[](const typename
-    object_t::key_type&), `null` values are created in arrays and objects if
-    necessary.
-
-    In particular:
-    - If the JSON pointer points to an object key that does not exist, it
-      is created an filled with a `null` value before a reference to it
-      is returned.
-    - If the JSON pointer points to an array index that does not exist, it
-      is created an filled with a `null` value before a reference to it
-      is returned. All indices between the current maximum and the given
-      index are also filled with `null`.
-    - The special value `-` is treated as a synonym for the index past the
-      end.
-
-    @param[in] ptr  a JSON pointer
-
-    @return reference to the element pointed to by @a ptr
-
-    @complexity Constant.
-
-    @throw std::out_of_range      if the JSON pointer can not be resolved
-    @throw std::domain_error      if an array index begins with '0'
-    @throw std::invalid_argument  if an array index was not a number
-
-    @liveexample{The behavior is shown in the example.,operatorjson_pointer}
-
-    @since version 2.0.0
-    */
-    reference operator[](const json_pointer& ptr)
-    {
-        return ptr.get_unchecked(this);
-    }
-
-    /*!
-    @brief access specified element via JSON Pointer
-
-    Uses a JSON pointer to retrieve a reference to the respective JSON value.
-    No bound checking is performed. The function does not change the JSON
-    value; no `null` values are created. In particular, the the special value
-    `-` yields an exception.
-
-    @param[in] ptr  JSON pointer to the desired element
-
-    @return const reference to the element pointed to by @a ptr
-
-    @complexity Constant.
-
-    @throw std::out_of_range      if the JSON pointer can not be resolved
-    @throw std::domain_error      if an array index begins with '0'
-    @throw std::invalid_argument  if an array index was not a number
-
-    @liveexample{The behavior is shown in the example.,operatorjson_pointer_const}
-
-    @since version 2.0.0
-    */
-    const_reference operator[](const json_pointer& ptr) const
-    {
-        return ptr.get_unchecked(this);
-    }
-
-    /*!
-    @brief access specified element via JSON Pointer
-
-    Returns a reference to the element at with specified JSON pointer @a ptr,
-    with bounds checking.
-
-    @param[in] ptr  JSON pointer to the desired element
-
-    @return reference to the element pointed to by @a ptr
-
-    @complexity Constant.
-
-    @throw std::out_of_range      if the JSON pointer can not be resolved
-    @throw std::domain_error      if an array index begins with '0'
-    @throw std::invalid_argument  if an array index was not a number
-
-    @liveexample{The behavior is shown in the example.,at_json_pointer}
-
-    @since version 2.0.0
-    */
-    reference at(const json_pointer& ptr)
-    {
-        return ptr.get_checked(this);
-    }
-
-    /*!
-    @brief access specified element via JSON Pointer
-
-    Returns a const reference to the element at with specified JSON pointer @a
-    ptr, with bounds checking.
-
-    @param[in] ptr  JSON pointer to the desired element
-
-    @return reference to the element pointed to by @a ptr
-
-    @complexity Constant.
-
-    @throw std::out_of_range      if the JSON pointer can not be resolved
-    @throw std::domain_error      if an array index begins with '0'
-    @throw std::invalid_argument  if an array index was not a number
-
-    @liveexample{The behavior is shown in the example.,at_json_pointer_const}
-
-    @since version 2.0.0
-    */
-    const_reference at(const json_pointer& ptr) const
-    {
-        return ptr.get_checked(this);
-    }
-
-    /*!
-    @brief return flattened JSON value
-
-    The function creates a JSON object whose keys are JSON pointers (see [RFC
-    6901](https://tools.ietf.org/html/rfc6901)) and whose values are all
-    primitive. The original JSON value can be restored using the @ref
-    unflatten() function.
-
-    @return an object that maps JSON pointers to primitve values
-
-    @note Empty objects and arrays are flattened to `null` and will not be
-          reconstructed correctly by the @ref unflatten() function.
-
-    @complexity Linear in the size the JSON value.
-
-    @liveexample{The following code shows how a JSON object is flattened to an
-    object whose keys consist of JSON pointers.,flatten}
-
-    @sa @ref unflatten() for the reverse function
-
-    @since version 2.0.0
-    */
-    basic_json flatten() const
-    {
-        basic_json result(value_t::object);
-        json_pointer::flatten("", *this, result);
-        return result;
-    }
-
-    /*!
-    @brief unflatten a previously flattened JSON value
-
-    The function restores the arbitrary nesting of a JSON value that has been
-    flattened before using the @ref flatten() function. The JSON value must
-    meet certain constraints:
-    1. The value must be an object.
-    2. The keys must be JSON pointers (see
-       [RFC 6901](https://tools.ietf.org/html/rfc6901))
-    3. The mapped values must be primitive JSON types.
-
-    @return the original JSON from a flattened version
-
-    @note Empty objects and arrays are flattened by @ref flatten() to `null`
-          values and can not unflattened to their original type. Apart from
-          this example, for a JSON value `j`, the following is always true:
-          `j == j.flatten().unflatten()`.
-
-    @complexity Linear in the size the JSON value.
-
-    @liveexample{The following code shows how a flattened JSON object is
-    unflattened into the original nested JSON object.,unflatten}
-
-    @sa @ref flatten() for the reverse function
-
-    @since version 2.0.0
-    */
-    basic_json unflatten() const
-    {
-        return json_pointer::unflatten(*this);
-    }
-
-    /// @}
-
-    //////////////////////////
-    // JSON Patch functions //
-    //////////////////////////
-
-    /// @name JSON Patch functions
-    /// @{
-
-    /*!
-    @brief applies a JSON patch
-
-    [JSON Patch](http://jsonpatch.com) defines a JSON document structure for
-    expressing a sequence of operations to apply to a JSON) document. With
-    this funcion, a JSON Patch is applied to the current JSON value by
-    executing all operations from the patch.
-
-    @param[in] json_patch  JSON patch document
-    @return patched document
-
-    @note The application of a patch is atomic: Either all operations succeed
-          and the patched document is returned or an exception is thrown. In
-          any case, the original value is not changed: the patch is applied
-          to a copy of the value.
-
-    @throw std::out_of_range if a JSON pointer inside the patch could not
-    be resolved successfully in the current JSON value; example: `"key baz
-    not found"`
-    @throw invalid_argument if the JSON patch is malformed (e.g., mandatory
-    attributes are missing); example: `"operation add must have member path"`
-
-    @complexity Linear in the size of the JSON value and the length of the
-    JSON patch. As usually only a fraction of the JSON value is affected by
-    the patch, the complexity can usually be neglected.
-
-    @liveexample{The following code shows how a JSON patch is applied to a
-    value.,patch}
-
-    @sa @ref diff -- create a JSON patch by comparing two JSON values
-
-    @sa [RFC 6902 (JSON Patch)](https://tools.ietf.org/html/rfc6902)
-    @sa [RFC 6901 (JSON Pointer)](https://tools.ietf.org/html/rfc6901)
-
-    @since version 2.0.0
-    */
-    basic_json patch(const basic_json& json_patch) const
-    {
-        // make a working copy to apply the patch to
-        basic_json result = *this;
-
-        // the valid JSON Patch operations
-        enum class patch_operations {add, remove, replace, move, copy, test, invalid};
-
-        const auto get_op = [](const std::string op)
-        {
-            if (op == "add")
-            {
-                return patch_operations::add;
-            }
-            if (op == "remove")
-            {
-                return patch_operations::remove;
-            }
-            if (op == "replace")
-            {
-                return patch_operations::replace;
-            }
-            if (op == "move")
-            {
-                return patch_operations::move;
-            }
-            if (op == "copy")
-            {
-                return patch_operations::copy;
-            }
-            if (op == "test")
-            {
-                return patch_operations::test;
-            }
-
-            return patch_operations::invalid;
-        };
-
-        // wrapper for "add" operation; add value at ptr
-        const auto operation_add = [&result](json_pointer & ptr, basic_json val)
-        {
-            // adding to the root of the target document means replacing it
-            if (ptr.is_root())
-            {
-                result = val;
+                    {"op", "replace"},
+                    {"path", path},
+                    {"value", target}
+                });
             }
             else
             {
-                // make sure the top element of the pointer exists
-                json_pointer top_pointer = ptr.top();
-                if (top_pointer != ptr)
+                switch (source.type())
                 {
-                    basic_json& x = result.at(top_pointer);
-                }
-
-                // get reference to parent of JSON pointer ptr
-                const auto last_path = ptr.pop_back();
-                basic_json& parent = result[ptr];
-
-                switch (parent.m_type)
-                {
-                    case value_t::null:
-                    case value_t::object:
+                    case value_t::array:
                     {
-                        // use operator[] to add value
-                        parent[last_path] = val;
+                        // first pass: traverse common elements
+                        size_t i = 0;
+                        while (i < source.size() and i < target.size())
+                        {
+                            // recursive call to compare array values at index i
+                            auto temp_diff = diff(source[i], target[i], path + "/" + std::to_string(i));
+                            result.insert(result.end(), temp_diff.begin(), temp_diff.end());
+                            ++i;
+                        }
+
+                        // i now reached the end of at least one array
+                        // in a second pass, traverse the remaining elements
+
+                        // remove my remaining elements
+                        const auto end_index = static_cast<difference_type>(result.size());
+                        while (i < source.size())
+                        {
+                            // add operations in reverse order to avoid invalid
+                            // indices
+                            result.insert(result.begin() + end_index, object(
+                            {
+                                {"op", "remove"},
+                                {"path", path + "/" + std::to_string(i)}
+                            }));
+                            ++i;
+                        }
+
+                        // add other remaining elements
+                        while (i < target.size())
+                        {
+                            result.push_back(
+                            {
+                                {"op", "add"},
+                                {"path", path + "/" + std::to_string(i)},
+                                {"value", target[i]}
+                            });
+                            ++i;
+                        }
+
                         break;
                     }
 
-                    case value_t::array:
+                    case value_t::object:
                     {
-                        if (last_path == "-")
+                        // first pass: traverse this object's elements
+                        for (auto it = source.begin(); it != source.end(); ++it)
                         {
-                            // special case: append to back
-                            parent.push_back(val);
-                        }
-                        else
-                        {
-                            const auto idx = std::stoi(last_path);
-                            if (static_cast<size_type>(idx) > parent.size())
+                            // escape the key name to be used in a JSON patch
+                            const auto key = json_pointer::escape(it.key());
+
+                            if (target.find(it.key()) != target.end())
                             {
-                                // avoid undefined behavior
-                                throw std::out_of_range("array index " + std::to_string(idx) + " is out of range");
+                                // recursive call to compare object values at key it
+                                auto temp_diff = diff(it.value(), target[it.key()], path + "/" + key);
+                                result.insert(result.end(), temp_diff.begin(), temp_diff.end());
                             }
                             else
                             {
-                                // default case: insert add offset
-                                parent.insert(parent.begin() + static_cast<difference_type>(idx), val);
+                                // found a key that is not in o -> remove it
+                                result.push_back(object(
+                                {
+                                    {"op", "remove"},
+                                    {"path", path + "/" + key}
+                                }));
                             }
                         }
+
+                        // second pass: traverse other object's elements
+                        for (auto it = target.begin(); it != target.end(); ++it)
+                        {
+                            if (source.find(it.key()) == source.end())
+                            {
+                                // found a key that is not in this -> add it
+                                const auto key = json_pointer::escape(it.key());
+                                result.push_back(
+                                {
+                                    {"op", "add"},
+                                    {"path", path + "/" + key},
+                                    {"value", it.value()}
+                                });
+                            }
+                        }
+
                         break;
                     }
 
                     default:
                     {
-                        // if there exists a parent it cannot be primitive
-                        assert(false);  // LCOV_EXCL_LINE
+                        // both primitive type: replace value
+                        result.push_back(
+                        {
+                            {"op", "replace"},
+                            {"path", path},
+                            {"value", target}
+                        });
+                        break;
                     }
                 }
             }
-        };
 
-        // wrapper for "remove" operation; remove value at ptr
-        const auto operation_remove = [&result](json_pointer & ptr)
-        {
-            // get reference to parent of JSON pointer ptr
-            const auto last_path = ptr.pop_back();
-            basic_json& parent = result.at(ptr);
-
-            // remove child
-            if (parent.is_object())
-            {
-                // perform range check
-                auto it = parent.find(last_path);
-                if (it != parent.end())
-                {
-                    parent.erase(it);
-                }
-                else
-                {
-                    throw std::out_of_range("key '" + last_path + "' not found");
-                }
-            }
-            else if (parent.is_array())
-            {
-                // note erase performs range check
-                parent.erase(static_cast<size_type>(std::stoi(last_path)));
-            }
-        };
-
-        // type check
-        if (not json_patch.is_array())
-        {
-            // a JSON patch must be an array of objects
-            throw std::invalid_argument("JSON patch must be an array of objects");
-        }
-
-        // iterate and apply th eoperations
-        for (const auto& val : json_patch)
-        {
-            // wrapper to get a value for an operation
-            const auto get_value = [&val](const std::string & op,
-                                          const std::string & member,
-                                          bool string_type) -> basic_json&
-            {
-                // find value
-                auto it = val.m_value.object->find(member);
-
-                // context-sensitive error message
-                const auto error_msg = (op == "op") ? "operation" : "operation '" + op + "'";
-
-                // check if desired value is present
-                if (it == val.m_value.object->end())
-                {
-                    throw std::invalid_argument(error_msg + " must have member '" + member + "'");
-                }
-
-                // check if result is of type string
-                if (string_type and not it->second.is_string())
-                {
-                    throw std::invalid_argument(error_msg + " must have string member '" + member + "'");
-                }
-
-                // no error: return value
-                return it->second;
-            };
-
-            // type check
-            if (not val.is_object())
-            {
-                throw std::invalid_argument("JSON patch must be an array of objects");
-            }
-
-            // collect mandatory members
-            const std::string op = get_value("op", "op", true);
-            const std::string path = get_value(op, "path", true);
-            json_pointer ptr(path);
-
-            switch (get_op(op))
-            {
-                case patch_operations::add:
-                {
-                    operation_add(ptr, get_value("add", "value", false));
-                    break;
-                }
-
-                case patch_operations::remove:
-                {
-                    operation_remove(ptr);
-                    break;
-                }
-
-                case patch_operations::replace:
-                {
-                    // the "path" location must exist - use at()
-                    result.at(ptr) = get_value("replace", "value", false);
-                    break;
-                }
-
-                case patch_operations::move:
-                {
-                    const std::string from_path = get_value("move", "from", true);
-                    json_pointer from_ptr(from_path);
-
-                    // the "from" location must exist - use at()
-                    basic_json v = result.at(from_ptr);
-
-                    // The move operation is functionally identical to a
-                    // "remove" operation on the "from" location, followed
-                    // immediately by an "add" operation at the target
-                    // location with the value that was just removed.
-                    operation_remove(from_ptr);
-                    operation_add(ptr, v);
-                    break;
-                }
-
-                case patch_operations::copy:
-                {
-                    const std::string from_path = get_value("copy", "from", true);;
-                    const json_pointer from_ptr(from_path);
-
-                    // the "from" location must exist - use at()
-                    result[ptr] = result.at(from_ptr);
-                    break;
-                }
-
-                case patch_operations::test:
-                {
-                    bool success = false;
-                    try
-                    {
-                        // check if "value" matches the one at "path"
-                        // the "path" location must exist - use at()
-                        success = (result.at(ptr) == get_value("test", "value", false));
-                    }
-                    catch (std::out_of_range&)
-                    {
-                        // ignore out of range errors: success remains false
-                    }
-
-                    // throw an exception if test fails
-                    if (not success)
-                    {
-                        throw std::domain_error("unsuccessful: " + val.dump());
-                    }
-
-                    break;
-                }
-
-                case patch_operations::invalid:
-                {
-                    // op must be "add", "remove", "replace", "move", "copy", or
-                    // "test"
-                    throw std::invalid_argument("operation value '" + op + "' is invalid");
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /*!
-    @brief creates a diff as a JSON patch
-
-    Creates a [JSON Patch](http://jsonpatch.com) so that value @a source can
-    be changed into the value @a target by calling @ref patch function.
-
-    @invariant For two JSON values @a source and @a target, the following code
-    yields always `true`:
-    @code {.cpp}
-    source.patch(diff(source, target)) == target;
-    @endcode
-
-    @note Currently, only `remove`, `add`, and `replace` operations are
-          generated.
-
-    @param[in] source  JSON value to copare from
-    @param[in] target  JSON value to copare against
-    @param[in] path    helper value to create JSON pointers
-
-    @return a JSON patch to convert the @a source to @a target
-
-    @complexity Linear in the lengths of @a source and @a target.
-
-    @liveexample{The following code shows how a JSON patch is created as a
-    diff for two JSON values.,diff}
-
-    @sa @ref patch -- apply a JSON patch
-
-    @sa [RFC 6902 (JSON Patch)](https://tools.ietf.org/html/rfc6902)
-
-    @since version 2.0.0
-    */
-    static basic_json diff(const basic_json& source,
-                           const basic_json& target,
-                           std::string path = "")
-    {
-        // the patch
-        basic_json result(value_t::array);
-
-        // if the values are the same, return empty patch
-        if (source == target)
-        {
             return result;
         }
 
-        if (source.type() != target.type())
-        {
-            // different types: replace value
-            result.push_back(
-            {
-                {"op", "replace"},
-                {"path", path},
-                {"value", target}
-            });
-        }
-        else
-        {
-            switch (source.type())
-            {
-                case value_t::array:
-                {
-                    // first pass: traverse common elements
-                    size_t i = 0;
-                    while (i < source.size() and i < target.size())
-                    {
-                        // recursive call to compare array values at index i
-                        auto temp_diff = diff(source[i], target[i], path + "/" + std::to_string(i));
-                        result.insert(result.end(), temp_diff.begin(), temp_diff.end());
-                        ++i;
-                    }
-
-                    // i now reached the end of at least one array
-                    // in a second pass, traverse the remaining elements
-
-                    // remove my remaining elements
-                    const auto end_index = static_cast<difference_type>(result.size());
-                    while (i < source.size())
-                    {
-                        // add operations in reverse order to avoid invalid
-                        // indices
-                        result.insert(result.begin() + end_index, object(
-                        {
-                            {"op", "remove"},
-                            {"path", path + "/" + std::to_string(i)}
-                        }));
-                        ++i;
-                    }
-
-                    // add other remaining elements
-                    while (i < target.size())
-                    {
-                        result.push_back(
-                        {
-                            {"op", "add"},
-                            {"path", path + "/" + std::to_string(i)},
-                            {"value", target[i]}
-                        });
-                        ++i;
-                    }
-
-                    break;
-                }
-
-                case value_t::object:
-                {
-                    // first pass: traverse this object's elements
-                    for (auto it = source.begin(); it != source.end(); ++it)
-                    {
-                        // escape the key name to be used in a JSON patch
-                        const auto key = json_pointer::escape(it.key());
-
-                        if (target.find(it.key()) != target.end())
-                        {
-                            // recursive call to compare object values at key it
-                            auto temp_diff = diff(it.value(), target[it.key()], path + "/" + key);
-                            result.insert(result.end(), temp_diff.begin(), temp_diff.end());
-                        }
-                        else
-                        {
-                            // found a key that is not in o -> remove it
-                            result.push_back(object(
-                            {
-                                {"op", "remove"},
-                                {"path", path + "/" + key}
-                            }));
-                        }
-                    }
-
-                    // second pass: traverse other object's elements
-                    for (auto it = target.begin(); it != target.end(); ++it)
-                    {
-                        if (source.find(it.key()) == source.end())
-                        {
-                            // found a key that is not in this -> add it
-                            const auto key = json_pointer::escape(it.key());
-                            result.push_back(
-                            {
-                                {"op", "add"},
-                                {"path", path + "/" + key},
-                                {"value", it.value()}
-                            });
-                        }
-                    }
-
-                    break;
-                }
-
-                default:
-                {
-                    // both primitive type: replace value
-                    result.push_back(
-                    {
-                        {"op", "replace"},
-                        {"path", path},
-                        {"value", target}
-                    });
-                    break;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /// @}
-};
+        /// @}
+    };
 
 
-/////////////
-// presets //
-/////////////
+    /////////////
+    // presets //
+    /////////////
 
-/*!
-@brief default JSON class
+    /*!
+    @brief default JSON class
 
-This type is the default specialization of the @ref basic_json class which
-uses the standard template types.
+    This type is the default specialization of the @ref basic_json class which
+    uses the standard template types.
 
-@since version 1.0.0
-*/
-using json = basic_json<>;
+    @since version 1.0.0
+    */
+    using json = basic_json<>;
 }
 
 
