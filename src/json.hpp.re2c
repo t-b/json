@@ -7739,9 +7739,9 @@ class basic_json
             result = 0;
 
             // maximal possible value for number_unsigned_t
-            static const T max_value = std::numeric_limits<T>::max();
+            static constexpr T max_value = std::numeric_limits<T>::max();
             // maximal intermediate value before multiplying by 10
-            static const T max_intermediate = max_value / 10;
+            static constexpr T max_intermediate = max_value / 10;
 
             /// pointer to the first digit (possibly skipping a '-')
             const auto first_digit = skip_first ? (m_start + 1) : m_start;
@@ -7817,7 +7817,7 @@ class basic_json
             // optimistically set result to int
             result.m_type = value_t::number_integer;
 
-            // parse as unsigned integer (skip the leading '-')
+            // parse as unsigned integer while skipping the leading '-'
             number_unsigned_t unsigned_value = 0;
             const bool overflow = get_uint(unsigned_value, true);
 
