@@ -8800,44 +8800,41 @@ basic_json_parser_68:
         the value is in the responsability of the caller.
 
         @param[out] result  the result of the conversion
-        @param skip_first  whether the first character should be skipped
+        @param[in] digit_pointer  the first digit to parse (is m_start for
+                                  unsigned integers and m_start+1 for signed
+                                  integers to skip the leading `-`)
 
         @tparam T  an unsigned integer type
 
         @return true iff overflow occurred; false if conversion succeeded
 
-        @pre The re2c lexer has successfully parsed an integer number. Only
-        two cases are valid: (1) all characters between m_start and m_cursor
-        are digits (unsigned integer) and @a skip_first is set to false, or
-        (2) the character at m_start is a '-' which will be ignored (@a
-        skip_first is set to true) and all other characters until m_cursor
-        are digits (signed integer).
+        @pre The re2c lexer has successfully parsed an integer number. In this
+        case, all characters between @a digit_pointer and m_cursor are digits.
+        For unsigned integers, digits_pointer == m_start. For signed integers,
+        digits_pointer == m_start+1, because the `-` needs to be skipped.
 
-        @post Either the string between m_start and m_cursor is processed
-        completely, @a result contains the parsed number, and the function
-        returns false; or parsing was interrupted prematurely, because an
-        overflow was detected. Then, the function returns true.
+        @pre @a result must be set to 0 initially.
+
+        @post Either the string between @a digit_pointer and m_cursor is
+        processed completely, @a result contains the parsed number, and the
+        function returns false; or parsing was interrupted prematurely,
+        because an overflow was detected. Then, the function returns true.
         */
         template<typename T>
-        bool get_uint(T& result, bool skip_first) const
+        bool get_uint(T& result, const lexer_char_t* digit_pointer) const
         {
-            assert(m_start != nullptr);
-            assert(m_start != m_cursor);
-
-            // initially, set the result to 0
-            result = 0;
+            assert(digit_pointer != nullptr);
+            assert(digit_pointer != m_cursor);
+            assert(result == 0);
 
             // maximal possible value for number_unsigned_t
             static constexpr T max_value = std::numeric_limits<T>::max();
             // maximal intermediate value before multiplying by 10
             static constexpr T max_intermediate = max_value / 10;
 
-            /// pointer to the first digit (possibly skipping a '-')
-            const auto first_digit = skip_first ? (m_start + 1) : m_start;
-
             // after re2c successfully parsed a number, the digits are between
-            // first_digit and m_cursor
-            for (auto p = first_digit; p != m_cursor; ++p)
+            // digit_pointer and m_cursor
+            for (; digit_pointer != m_cursor; ++digit_pointer)
             {
                 // check if multiplying by 10 would result in overflow
                 if (result > max_intermediate)
@@ -8849,7 +8846,8 @@ basic_json_parser_68:
                 result *= 10;
 
                 // the current digit
-                const T digit = static_cast<T>(*reinterpret_cast<typename string_t::const_pointer>(p) - '0');
+                const T digit = static_cast<T>(*reinterpret_cast<typename string_t::const_pointer>
+                                               (digit_pointer) - '0');
 
                 // check if adding the digit would result in overflow
                 if (digit > (max_value - result))
@@ -8880,9 +8878,10 @@ basic_json_parser_68:
         {
             // optimistically set result to unsigned int
             result.m_type = value_t::number_unsigned;
+            result.m_value = value_t::number_unsigned;
 
             // parse the number
-            const bool overflow = get_uint(result.m_value.number_unsigned, false);
+            const bool overflow = get_uint(result.m_value.number_unsigned, m_start);
 
             // if an overflow occurred, try again parsing the number to float
             if (overflow)
@@ -8908,7 +8907,7 @@ basic_json_parser_68:
 
             // parse as unsigned integer while skipping the leading '-'
             number_unsigned_t unsigned_value = 0;
-            const bool overflow = get_uint(unsigned_value, true);
+            const bool overflow = get_uint(unsigned_value, m_start + 1);
 
             // store negated number
             result.m_value.number_integer = static_cast<number_integer_t>(-unsigned_value);
