@@ -3854,6 +3854,37 @@ class basic_json
         return value(ptr, string_t(default_value));
     }
 
+    template <class ValueType, typename
+              std::enable_if<
+                  std::is_convertible<basic_json_t, ValueType>::value
+                  , int>::type = 0>
+    ValueType value_with_type(const typename object_t::key_type& key,
+                              ValueType default_value) const
+    {
+        // derive JSON value type from given default value
+        const value_t return_value_type = basic_json(default_value).type();
+
+        // at only works for objects
+        if (is_object())
+        {
+            // if key is found and stored value has the same type as the
+            // default value, return value and given default value otherwise
+            const auto it = find(key);
+            if (it != end() and it->type() == return_value_type)
+            {
+                return *it;
+            }
+            else
+            {
+                return default_value;
+            }
+        }
+        else
+        {
+            throw std::domain_error("cannot use value() with " + type_name());
+        }
+    }
+
     /*!
     @brief access the first element
 

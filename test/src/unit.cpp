@@ -14373,6 +14373,30 @@ TEST_CASE("regression tests")
 
         CHECK(at_integer == val_integer);
     }
+
+    SECTION("issue #278 - Do not throw exception when default_value's type does not match the actual type")
+    {
+        json j =
+        {
+            {"port", 1234}, {"proxy", true}
+        };
+
+        int port1 = j.value_with_type("port", 8080);
+        int port2 = j.value_with_type("the_port", 8080);
+        int port3 = j.value_with_type("proxy", 8080);
+
+        bool proxy1 = j.value_with_type("proxy", false);
+        bool proxy2 = j.value_with_type("the_proxy", false);
+        bool proxy3 = j.value_with_type("port", false);
+
+        CHECK(port1 == 1234);
+        CHECK(port2 == 8080);
+        CHECK(port3 == 8080);
+
+        CHECK(proxy1 == true);
+        CHECK(proxy2 == false);
+        CHECK(proxy3 == false);
+    }
 }
 
 // special test case to check if memory is leaked if constructor throws
