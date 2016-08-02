@@ -33,6 +33,7 @@ SOFTWARE.
 #include <array>
 #include <cassert>
 #include <ciso646>
+#include <climits>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>

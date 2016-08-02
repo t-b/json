@@ -33,6 +33,7 @@ SOFTWARE.
 #include <array>
 #include <cassert>
 #include <ciso646>
+#include <climits>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -76,8 +77,6 @@ SOFTWARE.
         #define COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW
     #endif
 #endif
-
-#undef COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW
 
 // select or define functions for unsigned integer arithmetic
 #ifdef COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW
