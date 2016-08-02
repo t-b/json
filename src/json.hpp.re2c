@@ -8023,8 +8023,6 @@ class basic_json
                                   unsigned integers and m_start+1 for signed
                                   integers to skip the leading `-`)
 
-        @tparam T  an unsigned integer type
-
         @return true iff overflow occurred; false if conversion succeeded
 
         @pre The re2c lexer has successfully parsed an integer number. In this
@@ -8039,17 +8037,16 @@ class basic_json
         function returns false; or parsing was interrupted prematurely,
         because an overflow was detected. Then, the function returns true.
         */
-        template<typename T>
-        bool get_uint(T& result, const lexer_char_t* digit_pointer) const
+        bool get_uint(uint64_t& result, const lexer_char_t* digit_pointer) const
         {
             assert(digit_pointer != nullptr);
             assert(digit_pointer != m_cursor);
             assert(result == 0);
 
-            // maximal possible value for number_unsigned_t
-            static constexpr T max_value = std::numeric_limits<T>::max();
+            // maximal possible value for get_uint
+            static constexpr uint64_t max_value = std::numeric_limits<uint64_t>::max();
             // maximal intermediate value before multiplying by 10
-            static constexpr T max_intermediate = max_value / 10;
+            static constexpr uint64_t max_intermediate = max_value / 10;
 
             // after re2c successfully parsed a number, the digits are between
             // digit_pointer and m_cursor
@@ -8065,8 +8062,8 @@ class basic_json
                 result *= 10;
 
                 // the current digit
-                const T digit = static_cast<T>(*reinterpret_cast<typename string_t::const_pointer>
-                                               (digit_pointer) - '0');
+                const uint64_t digit = static_cast<uint64_t>(*reinterpret_cast<typename string_t::const_pointer>
+                                       (digit_pointer) - '0');
 
                 // check if adding the digit would result in overflow
                 if (digit > (max_value - result))
@@ -8095,17 +8092,23 @@ class basic_json
         */
         void get_number_uint(basic_json& result) const
         {
-            // optimistically set result to unsigned int
-            result.m_type = value_t::number_unsigned;
-            result.m_value = value_t::number_unsigned;
+            // maximal possible value for number_unsigned_t
+            static constexpr number_unsigned_t max_value = std::numeric_limits<number_unsigned_t>::max();
 
-            // parse the number
-            const bool overflow = get_uint(result.m_value.number_unsigned, m_start);
+            // parse the number as uint64_t
+            uint64_t res = 0;
+            const bool overflow = get_uint(res, m_start);
 
             // if an overflow occurred, try again parsing the number to float
-            if (overflow)
+            if (overflow or res > max_value)
             {
                 get_number_float(result);
+            }
+            else
+            {
+                // no error: store the result as unsigned integer
+                result.m_type = value_t::number_unsigned;
+                result.m_value = static_cast<number_unsigned_t>(res);
             }
         }
 
@@ -8121,25 +8124,28 @@ class basic_json
         */
         void get_number_int(basic_json& result) const
         {
-            // optimistically set result to int
-            result.m_type = value_t::number_integer;
+            // maximal possible value for number_integer_t
+            static constexpr number_integer_t max_value = std::numeric_limits<number_integer_t>::max();
 
             // parse as unsigned integer while skipping the leading '-'
-            number_unsigned_t unsigned_value = 0;
-            const bool overflow = get_uint(unsigned_value, m_start + 1);
-
-            // store negated number
-            result.m_value.number_integer = static_cast<number_integer_t>(-unsigned_value);
+            uint64_t res = 0;
+            const bool overflow = get_uint(res, m_start + 1);
 
             // if an overflow occurred, try again parsing the number to float;
             // note that, assuming min = -(max + 1), we have an underflow
-            // iff  -unsigned_value     < min
-            // iff  -unsigned_value     < -(max + 1)
-            // iff   unsigned_value     > max + 1
-            // iff   unsigned_value - 1 > max
-            if (overflow or (unsigned_value - 1) > std::numeric_limits<number_integer_t>::max())
+            // iff  -res     < min
+            // iff  -res     < -(max + 1)
+            // iff   res     > max + 1
+            // iff   res - 1 > max
+            if (overflow or (res - 1) > max_value)
             {
                 get_number_float(result);
+            }
+            else
+            {
+                // no error: store the (negated) result as unsigned integer
+                result.m_type = value_t::number_integer;
+                result.m_value.number_integer = static_cast<number_integer_t>(-res);
             }
         }
 
