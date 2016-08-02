@@ -54,17 +54,36 @@ SOFTWARE.
 #include <utility>
 #include <vector>
 
-// exclude unsupported compilers
+// compiler-specifics
 #if defined(__clang__)
     #define CLANG_VERSION (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__)
+    // reject unsupported Clang versions
     #if CLANG_VERSION < 30400
         #error "unsupported Clang version - see https://github.com/nlohmann/json#supported-compilers"
     #endif
+    // check for __builtin_add_overflow and __builtin_mul_overflow
+    #if __has_builtin(__builtin_uaddll_overflow) && __has_builtin(__builtin_umulll_overflow)
+        #define COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW
+    #endif
 #elif defined(__GNUC__)
     #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+    // reject unsupported GCC versions
     #if GCC_VERSION < 40900
         #error "unsupported GCC version - see https://github.com/nlohmann/json#supported-compilers"
     #endif
+    // check for __builtin_add_overflow and __builtin_mul_overflow
+    #if GCC_VERSION >= 50000
+        #define COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW
+    #endif
+#endif
+
+// select or define functions for unsigned integer arithmetic
+#ifdef COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW
+    #define add_and_check_overflow(a,b,res,overflow) { overflow = __builtin_uaddll_overflow(a, b, &res); }
+    #define mul_and_check_overflow(a,b,res,overflow) { overflow = __builtin_umulll_overflow(a, b, &res); }
+#else
+    #define add_and_check_overflow(a,b,res,overflow) { res = a + b; overflow = res < a; }
+    #define mul_and_check_overflow(a,b,res,overflow) { res = a * b; overflow = (a > (ULLONG_MAX / b)); }
 #endif
 
 // disable float-equal warnings on GCC/clang
@@ -8015,8 +8034,8 @@ class basic_json
 
         Converts the last string read by the lexer to an unsigned integer
         number assuming a base of 10. Negative numbers shall be converted by
-        ignoring the leading '-' by setting @a skip_first to false. Negating
-        the value is in the responsability of the caller.
+        ignoring the leading '-' by passing m_start+1 to @a digit_pointer.
+        Negating the value is in the responsability of the caller.
 
         @param[out] result  the result of the conversion
         @param[in] digit_pointer  the first digit to parse (is m_start for
@@ -8036,49 +8055,332 @@ class basic_json
         processed completely, @a result contains the parsed number, and the
         function returns false; or parsing was interrupted prematurely,
         because an overflow was detected. Then, the function returns true.
+
+        @sa https://tombarta.wordpress.com/2008/04/23/specializing-atoi/
         */
-        bool get_uint(uint64_t& result, const lexer_char_t* digit_pointer) const
+        bool get_uint(unsigned long long& result,
+                      const lexer_char_t* digit_pointer) const
         {
             assert(digit_pointer != nullptr);
             assert(digit_pointer != m_cursor);
             assert(result == 0);
 
-            // maximal possible value for get_uint
-            static constexpr uint64_t max_value = std::numeric_limits<uint64_t>::max();
-            // maximal intermediate value before multiplying by 10
-            static constexpr uint64_t max_intermediate = max_value / 10;
+            // the length of the digit
+            size_t len = static_cast<size_t>(m_cursor - digit_pointer);
+            // whether an overflow occurred
+            bool overflow = false;
+            // variable for an intermediate result
+            unsigned long long tmp;
+            // variable for the char-to-number conversion
+            unsigned long long digit;
 
-            // after re2c successfully parsed a number, the digits are between
-            // digit_pointer and m_cursor
-            for (; digit_pointer != m_cursor; ++digit_pointer)
+            // numbers with more than 20 digits do not fit in 64 bits
+            if (len > 20)
             {
-                // check if multiplying by 10 would result in overflow
-                if (result > max_intermediate)
-                {
-                    // signal overflow
-                    return true;
-                }
-
-                result *= 10;
-
-                // the current digit
-                const uint64_t digit = static_cast<uint64_t>(*reinterpret_cast<typename string_t::const_pointer>
-                                       (digit_pointer) - '0');
-
-                // check if adding the digit would result in overflow
-                if (digit > (max_value - result))
-                {
-                    // signal overflow
-                    return true;
-                }
-
-                result += digit;
+                return true;
             }
 
-            // signal absence of overflow
+            switch (len)
+            {
+                case 20:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 20) - '0');
+                    mul_and_check_overflow(digit, 10000000000000000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 19:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 19) - '0');
+                    mul_and_check_overflow(digit, 1000000000000000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 18:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 18) - '0');
+                    mul_and_check_overflow(digit, 100000000000000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 17:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 17) - '0');
+                    mul_and_check_overflow(digit, 10000000000000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 16:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 16) - '0');
+                    mul_and_check_overflow(digit, 1000000000000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 15:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 15) - '0');
+                    mul_and_check_overflow(digit, 100000000000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 14:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 14) - '0');
+                    mul_and_check_overflow(digit, 10000000000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 13:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 13) - '0');
+                    mul_and_check_overflow(digit, 1000000000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 12:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 12) - '0');
+                    mul_and_check_overflow(digit, 100000000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 11:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 11) - '0');
+                    mul_and_check_overflow(digit, 10000000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 10:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 10) - '0');
+                    mul_and_check_overflow(digit, 1000000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 9:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 9) - '0');
+                    mul_and_check_overflow(digit, 100000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 8:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 8) - '0');
+                    mul_and_check_overflow(digit, 10000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 7:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 7) - '0');
+                    mul_and_check_overflow(digit, 1000000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 6:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 6) - '0');
+                    mul_and_check_overflow(digit, 100000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 5:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 5) - '0');
+                    mul_and_check_overflow(digit, 10000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 4:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 4) - '0');
+                    mul_and_check_overflow(digit, 1000u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 3:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 3) - '0');
+                    mul_and_check_overflow(digit, 100u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 2:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 2) - '0');
+                    mul_and_check_overflow(digit, 10u, tmp, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                    add_and_check_overflow(result, tmp, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+                case 1:
+                {
+                    digit = static_cast<unsigned long long>(*reinterpret_cast<typename string_t::const_pointer>
+                                                            (m_cursor - 1) - '0');
+                    add_and_check_overflow(digit, result, result, overflow);
+                    if (overflow)
+                    {
+                        return true;
+                    }
+                }
+            }
+
             return false;
         }
-
 
         /*!
         @brief parse unsigned integer number
@@ -8096,12 +8398,13 @@ class basic_json
             static constexpr number_unsigned_t max_value = std::numeric_limits<number_unsigned_t>::max();
 
             // parse the number as uint64_t
-            uint64_t res = 0;
+            unsigned long long res = 0;
             const bool overflow = get_uint(res, m_start);
 
-            // if an overflow occurred, try again parsing the number to float
+            // check for overflow
             if (overflow or res > max_value)
             {
+                // try again parsing the number to float
                 get_number_float(result);
             }
             else
@@ -8128,7 +8431,7 @@ class basic_json
             static constexpr number_integer_t max_value = std::numeric_limits<number_integer_t>::max();
 
             // parse as unsigned integer while skipping the leading '-'
-            uint64_t res = 0;
+            unsigned long long res = 0;
             const bool overflow = get_uint(res, m_start + 1);
 
             // if an overflow occurred, try again parsing the number to float;
@@ -8139,6 +8442,7 @@ class basic_json
             // iff   res - 1 > max
             if (overflow or (res - 1) > max_value)
             {
+                // try again parsing the number to float
                 get_number_float(result);
             }
             else
