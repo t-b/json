@@ -99,6 +99,8 @@ To embed the library directly into an existing CMake project, place the entire s
 # Typically you don't care so much for a third party library's tests to be
 # run from your own project's code.
 set(JSON_BuildTests OFF CACHE INTERNAL "")
+# And neither about the installation.
+set(JSON_INSTALL OFF CACHE INTERNAL "")
 
 # Don't use include(nlohmann_json/CMakeLists.txt) since that carries with it
 # inintended consequences that will break the build.  It's generally
@@ -136,6 +138,7 @@ if(FOO_USE_EXTERNAL_JSON)
   find_package(nlohmann_json 3.2.0 REQUIRED)
 else()
   set(JSON_BuildTests OFF CACHE INTERNAL "")
+  set(JSON_INSTALL OFF CACHE INTERNAL "")
   add_subdirectory(nlohmann_json)
 endif()
 ...
